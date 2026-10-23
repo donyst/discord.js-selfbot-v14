@@ -41,4 +41,4 @@ Discord's Terms of Service strictly forbid automated user accounts. Bans general
 This fork is maintained by **[Phạm Minh Đồng (@donyst)](https://github.com/donyst)**.
 
 ### Where can I report issues or request features?
-Please open an issue at [https://github.com/donyst/discord.js-selfbot-v13/issues](https://github.com/donyst/discord.js-selfbot-v13/issues).
+Please open an issue at [https://github.com/donyst/discord.js-selfbot-v14/issues](https://github.com/donyst/discord.js-selfbot-v14/issues).

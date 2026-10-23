@@ -1,6 +1,6 @@
 # Interactions & Slash Commands
 
-One of the standout features of `discord.js-selfbot-v13` is full support for executing bot interactions as a user account.
+One of the standout features of `discord.js-selfbot-v14` is full support for executing bot interactions as a user account.
 
 ---
 
@@ -19,7 +19,7 @@ channel.sendSlash(
 ### Basic Slash Command
 
 ```typescript
-import { Client, TextChannel } from 'discord.js-selfbot-v13';
+import { Client, TextChannel } from 'discord.js-selfbot-v14';
 
 const client = new Client();
 

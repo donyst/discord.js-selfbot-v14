@@ -9,7 +9,7 @@ When Discord detects unusual activity, or when performing sensitive actions (joi
 You can supply a custom `captchaSolver` callback function in the `Client` options:
 
 ```typescript
-import { Client } from 'discord.js-selfbot-v13';
+import { Client } from 'discord.js-selfbot-v14';
 
 const client = new Client({
   captchaSolver: async (captchaData) => {
@@ -55,12 +55,12 @@ await guild.delete(token);
 
 ## 3. Remote Auth Login via QR Code
 
-`discord.js-selfbot-v13` includes support for Discord's native Remote Authentication gateway (v2 protocol), enabling passwordless, 1-click mobile login via QR code.
+`discord.js-selfbot-v14` includes support for Discord's native Remote Authentication gateway (v2 protocol), enabling passwordless, 1-click mobile login via QR code.
 
 ### Basic Usage (Interactive Terminal QR)
 
 ```typescript
-import { Client } from 'discord.js-selfbot-v13';
+import { Client } from 'discord.js-selfbot-v14';
 
 const client = new Client();
 

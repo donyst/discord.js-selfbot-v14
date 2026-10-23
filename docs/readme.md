@@ -1,6 +1,6 @@
-# 📖 discord.js-selfbot-v13 Documentation
+# 📖 discord.js-selfbot-v14 Documentation
 
-Welcome to the official documentation for **`discord.js-selfbot-v13`**, the actively maintained Node.js library for Discord user accounts, maintained by **[Phạm Minh Đồng (@donyst)](https://github.com/donyst)**.
+Welcome to the official documentation for **`discord.js-selfbot-v14`**, the actively maintained Node.js library for Discord user accounts with full discord.js v14 architecture parity, maintained by **[Phạm Minh Đồng (@donyst)](https://github.com/donyst)**.
 
 ---
 
@@ -20,7 +20,7 @@ Welcome to the official documentation for **`discord.js-selfbot-v13`**, the acti
 ## ⚡ Quick Reference
 
 ```typescript
-import { Client } from 'discord.js-selfbot-v13';
+import { Client } from 'discord.js-selfbot-v14';
 
 const client = new Client({
   checkUpdate: false,

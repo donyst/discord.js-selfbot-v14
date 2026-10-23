@@ -1,6 +1,6 @@
-# Getting Started with discord.js-selfbot-v13
+# Getting Started with discord.js-selfbot-v14
 
-This guide walks you through setting up, configuring, and running your selfbot application using **`discord.js-selfbot-v13`** (maintained by [Phạm Minh Đồng](https://github.com/donyst)).
+This guide walks you through setting up, configuring, and running your selfbot application using **`discord.js-selfbot-v14`** (maintained by [Phạm Minh Đồng](https://github.com/donyst)).
 
 ---
 
@@ -16,7 +16,7 @@ This guide walks you through setting up, configuring, and running your selfbot a
 
 ```bash
 # Via git repository:
-npm install https://github.com/donyst/discord.js-selfbot-v13.git
+npm install https://github.com/donyst/discord.js-selfbot-v14.git
 ```
 
 ---
@@ -24,7 +24,7 @@ npm install https://github.com/donyst/discord.js-selfbot-v13.git
 ## 3. Initializing the Client
 
 ```typescript
-import { Client } from 'discord.js-selfbot-v13';
+import { Client } from 'discord.js-selfbot-v14';
 
 const client = new Client({
   checkUpdate: false, // Set to false to disable automated update check notices
@@ -88,7 +88,7 @@ Always load your user token from environment variables or a secure secret manage
 
 ```typescript
 import 'dotenv/config';
-import { Client } from 'discord.js-selfbot-v13';
+import { Client } from 'discord.js-selfbot-v14';
 
 const client = new Client();
 client.login(process.env.DISCORD_USER_TOKEN);

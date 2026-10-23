@@ -1,13 +1,13 @@
 # Voice & Video Streaming
 
-`discord.js-selfbot-v13` includes support for Discord user voice connections and Go-Live video streaming, powered by WebRTC and `werift-rtp`.
+`discord.js-selfbot-v14` includes support for Discord user voice connections and Go-Live video streaming, powered by WebRTC and `werift-rtp`.
 
 ---
 
 ## 1. Joining a Voice Channel
 
 ```typescript
-import { Client, StageChannel, VoiceChannel } from 'discord.js-selfbot-v13';
+import { Client, StageChannel, VoiceChannel } from 'discord.js-selfbot-v14';
 
 const client = new Client();
 
@@ -31,7 +31,7 @@ client.on('ready', async () => {
 Selfbot accounts can broadcast video streams directly into Discord voice channels:
 
 ```typescript
-import { Client, VoiceChannel } from 'discord.js-selfbot-v13';
+import { Client, VoiceChannel } from 'discord.js-selfbot-v14';
 
 const client = new Client();
 

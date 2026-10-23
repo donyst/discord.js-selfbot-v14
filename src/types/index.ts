@@ -1,5 +1,5 @@
 /**
- * Core TypeScript Type Definitions for discord.js-selfbot-v13
+ * Core TypeScript Type Definitions for discord.js-selfbot-v14
  * Strict Type System - Zero 'any' Policy
  */
 

@@ -1,18 +1,18 @@
 <div align="center">
   <br />
   <p>
-    <a href="https://github.com/donyst/discord.js-selfbot-v13"><img src="https://discord.js.org/static/logo.svg" width="450" alt="discord.js-selfbot-v13" /></a>
+    <a href="https://github.com/donyst/discord.js-selfbot-v14"><img src="https://discord.js.org/static/logo.svg" width="450" alt="discord.js-selfbot-v14" /></a>
   </p>
-  <h1>discord.js-selfbot-v13</h1>
+  <h1>discord.js-selfbot-v14</h1>
   <p>
     <strong>A modern, powerful, and actively maintained Node.js library for Discord User Accounts (Selfbots).</strong>
   </p>
   <p>
-    <a href="https://github.com/donyst/discord.js-selfbot-v13/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=flat-square" alt="License" /></a>
+    <a href="https://github.com/donyst/discord.js-selfbot-v14/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=flat-square" alt="License" /></a>
     <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20.18.0-brightgreen.svg?style=flat-square" alt="Node Version" /></a>
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-Ready-blue.svg?style=flat-square" alt="TypeScript" /></a>
-    <a href="https://github.com/donyst/discord.js-selfbot-v13/stargazers"><img src="https://img.shields.io/github/stars/donyst/discord.js-selfbot-v13?style=flat-square" alt="GitHub Stars" /></a>
-    <a href="https://github.com/donyst/discord.js-selfbot-v13/issues"><img src="https://img.shields.io/github/issues/donyst/discord.js-selfbot-v13?style=flat-square" alt="GitHub Issues" /></a>
+    <a href="https://github.com/donyst/discord.js-selfbot-v14/stargazers"><img src="https://img.shields.io/github/stars/donyst/discord.js-selfbot-v14?style=flat-square" alt="GitHub Stars" /></a>
+    <a href="https://github.com/donyst/discord.js-selfbot-v14/issues"><img src="https://img.shields.io/github/issues/donyst/discord.js-selfbot-v14?style=flat-square" alt="GitHub Issues" /></a>
   </p>
 </div>
 
@@ -52,13 +52,13 @@ Install via your preferred package manager:
 
 ```bash
 # Using npm
-npm install https://github.com/donyst/discord.js-selfbot-v13.git
+npm install https://github.com/donyst/discord.js-selfbot-v14.git
 
 # Using pnpm
-pnpm add https://github.com/donyst/discord.js-selfbot-v13.git
+pnpm add https://github.com/donyst/discord.js-selfbot-v14.git
 
 # Using yarn
-yarn add https://github.com/donyst/discord.js-selfbot-v13.git
+yarn add https://github.com/donyst/discord.js-selfbot-v14.git
 ```
 
 ---
@@ -68,7 +68,7 @@ yarn add https://github.com/donyst/discord.js-selfbot-v13.git
 ### 1. Modern ESM / TypeScript
 
 ```typescript
-import { Client } from 'discord.js-selfbot-v13';
+import { Client } from 'discord.js-selfbot-v14';
 
 const client = new Client({
   checkUpdate: false,
@@ -90,7 +90,7 @@ client.login(process.env.DISCORD_TOKEN);
 ### 2. CommonJS (CJS)
 
 ```javascript
-const { Client } = require('discord.js-selfbot-v13');
+const { Client } = require('discord.js-selfbot-v14');
 
 const client = new Client();
 
@@ -115,7 +115,7 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-} from 'discord.js-selfbot-v13';
+} from 'discord.js-selfbot-v14';
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
@@ -152,7 +152,7 @@ client.login(process.env.DISCORD_TOKEN);
 Log in directly by scanning an ASCII QR code with your Discord mobile app:
 
 ```typescript
-import { Client } from 'discord.js-selfbot-v13';
+import { Client } from 'discord.js-selfbot-v14';
 
 const client = new Client();
 
@@ -171,7 +171,7 @@ await client.QRLogin();
 Triggering slash commands with user accounts:
 
 ```typescript
-import { Client, TextChannel } from 'discord.js-selfbot-v13';
+import { Client, TextChannel } from 'discord.js-selfbot-v14';
 
 const client = new Client();
 
@@ -203,7 +203,7 @@ client.on('ready', () => {
       {
         name: 'Visual Studio Code',
         type: 'PLAYING',
-        details: 'Developing discord.js-selfbot-v13',
+        details: 'Developing discord.js-selfbot-v14',
         state: 'Workspace: TypeScript',
         timestamps: { start: Date.now() },
       },
@@ -291,7 +291,7 @@ This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**
 See the [LICENSE](LICENSE) file for complete terms.
 
 ```
-discord.js-selfbot-v13
+discord.js-selfbot-v14
 Copyright (C) 2025-2026 Phạm Minh Đồng (donyst) <dongdz.user@gmail.com>
 Copyright (C) 2022-2025 aiko-chan-ai
 Copyright (C) 2015-2022 discord.js contributors

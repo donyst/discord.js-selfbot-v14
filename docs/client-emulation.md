@@ -2,7 +2,7 @@
 
 To avoid rapid flagging and security detections by Discord's anti-abuse systems, selfbots must accurately mirror official Discord client fingerprints.
 
-This fork of **`discord.js-selfbot-v13`** (maintained by [Phạm Minh Đồng](https://github.com/donyst)) features synchronized client emulation aligned with **Discord Desktop 1.0.9265**.
+This fork of **`discord.js-selfbot-v14`** (maintained by [Phạm Minh Đồng](https://github.com/donyst)) features synchronized client emulation aligned with **Discord Desktop 1.0.9265**.
 
 ---
 
@@ -56,7 +56,7 @@ Every REST API request made by the library mirrors the exact headers dispatched 
 If you need to emulate macOS, Linux, or a web browser, customize `ws.properties`:
 
 ```typescript
-import { Client } from 'discord.js-selfbot-v13';
+import { Client } from 'discord.js-selfbot-v14';
 
 const client = new Client({
   ws: {

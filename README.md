@@ -101,7 +101,53 @@ client.on('ready', async () => {
 client.login('YOUR_DISCORD_TOKEN');
 ```
 
-### 3. QR Code Remote Auth (No Token Needed!)
+### 3. Modern discord.js v14 Parity (Builders, Enums & BitFields)
+
+Fully compatible with discord.js v14 (`14.27.0`) syntax while maintaining selfbot capabilities:
+
+```typescript
+import {
+  Client,
+  Events,
+  GatewayIntentBits,
+  Partials,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} from 'discord.js-selfbot-v13';
+
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+  partials: [Partials.Channel, Partials.Message],
+});
+
+client.on(Events.ClientReady, () => {
+  console.log(`Connected as ${client.user?.tag}!`);
+});
+
+client.on(Events.MessageCreate, async (message) => {
+  if (message.content === '!v14') {
+    const embed = new EmbedBuilder()
+      .setTitle('discord.js v14 Architecture')
+      .setDescription('Modern builders with complete user automation support!')
+      .setColor(0x5865F2);
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId('demo_btn')
+        .setLabel('v14 Button')
+        .setStyle(ButtonStyle.Primary),
+    );
+
+    await message.channel.send({ embeds: [embed], components: [row] });
+  }
+});
+
+client.login(process.env.DISCORD_TOKEN);
+```
+
+### 4. QR Code Remote Auth (No Token Needed!)
 
 Log in directly by scanning an ASCII QR code with your Discord mobile app:
 

@@ -478,7 +478,12 @@ export class Util {
     for (const key in def) {
       if (!hasOwn(given, key) || given[key] === undefined) {
         result[key] = def[key];
-      } else if (isObj(given[key]) && isObj(def[key])) {
+      } else if (
+        !Array.isArray(given[key]) &&
+        !Array.isArray(def[key]) &&
+        isObj(given[key]) &&
+        isObj(def[key])
+      ) {
         result[key] = Util.mergeDefault(
           def[key] as Record<string, unknown>,
           given[key] as Record<string, unknown>,

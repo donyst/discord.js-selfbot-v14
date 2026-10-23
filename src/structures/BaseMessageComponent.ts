@@ -67,6 +67,9 @@ export class BaseMessageComponent {
     client?: Client | WebhookClient | null,
   ): AnyComponent | null {
     if (!data) return null;
+    if (typeof (data as { toJSON?: unknown }).toJSON === 'function' && !(data instanceof BaseMessageComponent)) {
+      data = (data as { toJSON(): Record<string, unknown> }).toJSON();
+    }
     if (!componentCreator) {
       throw new Error('ComponentCreator has not been initialized.');
     }

@@ -218,6 +218,13 @@ export class Interaction extends Base {
   }
 
   /**
+   * Indicates whether this interaction is a ChatInputCommandInteraction.
+   */
+  public isChatInputCommand(): boolean {
+    return this.isCommand();
+  }
+
+  /**
    * Indicates whether this interaction is a ContextMenuInteraction.
    */
   public isContextMenu(): boolean {
@@ -225,6 +232,13 @@ export class Interaction extends Base {
       (InteractionTypes as Record<string, number>)[this.type] === InteractionTypes.APPLICATION_COMMAND &&
       typeof this.targetId !== 'undefined'
     );
+  }
+
+  /**
+   * Indicates whether this interaction is a ContextMenuCommandInteraction.
+   */
+  public isContextMenuCommand(): boolean {
+    return this.isContextMenu();
   }
 
   /**
@@ -284,8 +298,71 @@ export class Interaction extends Base {
   public isSelectMenu(): boolean {
     return (
       (InteractionTypes as Record<string, number>)[this.type] === InteractionTypes.MESSAGE_COMPONENT &&
-      (MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.SELECT_MENU
+      ((MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.STRING_SELECT ||
+        (MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.SELECT_MENU ||
+        (MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.USER_SELECT ||
+        (MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.ROLE_SELECT ||
+        (MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.MENTIONABLE_SELECT ||
+        (MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.CHANNEL_SELECT)
     );
+  }
+
+  /**
+   * Indicates whether this interaction is a StringSelectMenuInteraction.
+   */
+  public isStringSelectMenu(): boolean {
+    return (
+      (InteractionTypes as Record<string, number>)[this.type] === InteractionTypes.MESSAGE_COMPONENT &&
+      ((MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.STRING_SELECT ||
+        (MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.SELECT_MENU)
+    );
+  }
+
+  /**
+   * Indicates whether this interaction is a UserSelectMenuInteraction.
+   */
+  public isUserSelectMenu(): boolean {
+    return (
+      (InteractionTypes as Record<string, number>)[this.type] === InteractionTypes.MESSAGE_COMPONENT &&
+      (MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.USER_SELECT
+    );
+  }
+
+  /**
+   * Indicates whether this interaction is a RoleSelectMenuInteraction.
+   */
+  public isRoleSelectMenu(): boolean {
+    return (
+      (InteractionTypes as Record<string, number>)[this.type] === InteractionTypes.MESSAGE_COMPONENT &&
+      (MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.ROLE_SELECT
+    );
+  }
+
+  /**
+   * Indicates whether this interaction is a ChannelSelectMenuInteraction.
+   */
+  public isChannelSelectMenu(): boolean {
+    return (
+      (InteractionTypes as Record<string, number>)[this.type] === InteractionTypes.MESSAGE_COMPONENT &&
+      (MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.CHANNEL_SELECT
+    );
+  }
+
+  /**
+   * Indicates whether this interaction is a MentionableSelectMenuInteraction.
+   */
+  public isMentionableSelectMenu(): boolean {
+    return (
+      (InteractionTypes as Record<string, number>)[this.type] === InteractionTypes.MESSAGE_COMPONENT &&
+      (MessageComponentTypes as Record<string, number>)[String(this.componentType)] === MessageComponentTypes.MENTIONABLE_SELECT
+    );
+  }
+
+  /**
+   * Indicates whether this interaction is any select menu interaction.
+   */
+  public isAnySelectMenu(): boolean {
+    return this.isSelectMenu();
   }
 
   /**

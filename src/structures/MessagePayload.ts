@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer';
-import BaseMessageComponent, { type AnyComponent } from './BaseMessageComponent.js';
+import BaseMessageComponent from './BaseMessageComponent.js';
 import MessageEmbed, { type MessageEmbedOptions, type APIEmbed } from './MessageEmbed.js';
 import { RangeError as DjsRangeError, Error as DjsError } from '../errors/index.js';
 import ActivityFlags from '../util/ActivityFlags.js';
@@ -154,9 +154,14 @@ export class MessagePayload {
     }
 
     const components = this.options.components
-      ?.map(c => BaseMessageComponent.create(c))
-      .filter((c): c is AnyComponent => c !== null)
-      .map(c => c.toJSON());
+      ?.map(c => {
+        if (c && typeof (c as { toJSON?: unknown }).toJSON === 'function' && !(c instanceof BaseMessageComponent)) {
+          return (c as { toJSON(): unknown }).toJSON();
+        }
+        const created = BaseMessageComponent.create(c as Record<string, unknown>);
+        return created ? created.toJSON() : null;
+      })
+      .filter((c): c is Record<string, unknown> => c !== null);
 
     let username: string | undefined;
     let avatarURL: string | undefined;
@@ -180,7 +185,8 @@ export class MessagePayload {
 
     let allowedMentions =
       typeof this.options.allowedMentions === 'undefined'
-        ? (this.target.client.options as unknown as { allowedMentions?: Record<string, unknown> }).allowedMentions
+        ? (this.target.client?.options as unknown as { allowedMentions?: Record<string, unknown> })?.allowedMentions ??
+          (this.target as unknown as { options?: { allowedMentions?: Record<string, unknown> } })?.options?.allowedMentions
         : this.options.allowedMentions;
 
     if (allowedMentions) {
@@ -287,7 +293,12 @@ export class MessagePayload {
       content,
       tts,
       nonce,
-      embeds: this.options.embeds?.map(embed => new MessageEmbed(embed as APIEmbed).toJSON()),
+      embeds: this.options.embeds?.map(embed => {
+        if (embed && typeof (embed as { toJSON?: unknown }).toJSON === 'function') {
+          return (embed as { toJSON(): APIEmbed }).toJSON();
+        }
+        return new MessageEmbed(embed as APIEmbed).toJSON();
+      }),
       components,
       username,
       avatar_url: avatarURL,

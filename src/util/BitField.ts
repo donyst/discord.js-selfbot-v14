@@ -5,7 +5,20 @@ import type { BitFieldResolvable } from '../types/index.js';
  */
 export class BitField<T extends string = string, N extends number | bigint = number | bigint> {
   public static FLAGS: Record<string, bigint | number> = {};
+  public static get Flags(): Record<string, bigint | number> {
+    return this.FLAGS;
+  }
+  public static set Flags(val: Record<string, bigint | number>) {
+    this.FLAGS = val;
+  }
+
   public static defaultBit: bigint | number = 0;
+  public static get DefaultBit(): bigint | number {
+    return this.defaultBit;
+  }
+  public static set DefaultBit(val: bigint | number) {
+    this.defaultBit = val;
+  }
 
   public bitfield: N;
 
@@ -178,10 +191,17 @@ export class BitField<T extends string = string, N extends number | bigint = num
   public static resolve<T extends string = string, N extends number | bigint = number | bigint>(
     bit?: BitFieldResolvable<T, N>,
   ): N {
-    const { defaultBit, FLAGS } = this;
-    if (bit === undefined) return defaultBit as N;
+    const ctor = this as unknown as {
+      FLAGS?: Record<string, bigint | number>;
+      Flags?: Record<string, bigint | number>;
+      defaultBit?: bigint | number;
+    };
+    const defaultBit = (ctor.defaultBit ?? 0) as N;
+    const FLAGS = (ctor.Flags ?? ctor.FLAGS ?? {}) as Record<string, bigint | number>;
 
-    if (typeof defaultBit === typeof bit && (bit as N) >= (defaultBit as N)) {
+    if (bit === undefined) return defaultBit;
+
+    if (typeof defaultBit === typeof bit && (bit as N) >= defaultBit) {
       return bit as N;
     }
 
@@ -195,7 +215,7 @@ export class BitField<T extends string = string, N extends number | bigint = num
           return (prev | p) as N;
         }
         return ((prev as number) | (p as number)) as N;
-      }, defaultBit as N);
+      }, defaultBit);
     }
 
     if (typeof bit === 'string') {
@@ -204,6 +224,10 @@ export class BitField<T extends string = string, N extends number | bigint = num
       }
       if (FLAGS[bit] !== undefined) {
         return FLAGS[bit] as N;
+      }
+      const upper = bit.replace(/([A-Z])/g, '_$1').toUpperCase().replace(/^_/, '');
+      if (FLAGS[upper] !== undefined) {
+        return FLAGS[upper] as N;
       }
     }
 

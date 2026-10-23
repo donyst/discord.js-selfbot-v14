@@ -18,13 +18,27 @@ export type RateLimitQueueFilter = (rateLimitData: RateLimitData) => boolean | P
 
 export type CaptchaSolver = (captcha: unknown, userAgent: string) => Promise<string>;
 
+import { Partials } from './Constants.js';
+import type { IntentsResolvable } from './Intents.js';
+
+export { Partials };
+
 export type PartialType =
   | 'USER'
   | 'CHANNEL'
   | 'GUILD_MEMBER'
   | 'MESSAGE'
   | 'REACTION'
-  | 'GUILD_SCHEDULED_EVENT';
+  | 'GUILD_SCHEDULED_EVENT'
+  | 'THREAD_MEMBER'
+  | 'User'
+  | 'Channel'
+  | 'GuildMember'
+  | 'Message'
+  | 'Reaction'
+  | 'GuildScheduledEvent'
+  | 'ThreadMember'
+  | Partials;
 
 export interface HTTPOptions {
   version: number;
@@ -61,8 +75,8 @@ export interface ClientOptions {
   messageCacheLifetime: number;
   messageSweepInterval: number;
   invalidRequestWarningInterval: number;
-  intents: number;
-  partials: PartialType[];
+  intents: number | IntentsResolvable;
+  partials: (PartialType | number | string)[];
   restWsBridgeTimeout: number;
   restRequestTimeout: number;
   restGlobalRateLimit: number;

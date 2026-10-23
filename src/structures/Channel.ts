@@ -121,8 +121,29 @@ export abstract class Channel extends Base {
     return 'messages' in this;
   }
 
+  public isTextBased(): boolean {
+    return this.isText();
+  }
+
   public isVoice(): boolean {
     return (VoiceBasedChannelTypes as readonly string[]).includes(this.type);
+  }
+
+  public isVoiceBased(): boolean {
+    return this.isVoice();
+  }
+
+  public isDMBased(): boolean {
+    return (
+      this.type === 'DM' ||
+      this.type === 'GROUP_DM' ||
+      (this.type as unknown) === 1 ||
+      (this.type as unknown) === 3
+    );
+  }
+
+  public isSendable(): boolean {
+    return 'send' in this;
   }
 
   public isThread(): boolean {

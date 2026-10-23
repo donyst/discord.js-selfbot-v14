@@ -1,7 +1,11 @@
+import { GatewayIntentBits } from 'discord-api-types/v10';
 import { BitField } from './BitField.js';
 import type { BitFieldResolvable } from '../types/index.js';
 
+export { GatewayIntentBits };
+
 export type IntentsString =
+  | keyof typeof GatewayIntentBits
   | 'GUILDS'
   | 'GUILD_MEMBERS'
   | 'GUILD_BANS'
@@ -24,31 +28,49 @@ export type IntentsString =
 
 export type IntentsResolvable = BitFieldResolvable<IntentsString, number>;
 
-export class Intents extends BitField<IntentsString, number> {
-  public static override FLAGS: Record<IntentsString, number> = {
-    GUILDS: 1 << 0,
-    GUILD_MEMBERS: 1 << 1,
-    GUILD_BANS: 1 << 2,
-    GUILD_EMOJIS_AND_STICKERS: 1 << 3,
-    GUILD_INTEGRATIONS: 1 << 4,
-    GUILD_WEBHOOKS: 1 << 5,
-    GUILD_INVITES: 1 << 6,
-    GUILD_VOICE_STATES: 1 << 7,
-    GUILD_PRESENCES: 1 << 8,
-    GUILD_MESSAGES: 1 << 9,
-    GUILD_MESSAGE_REACTIONS: 1 << 10,
-    GUILD_MESSAGE_TYPING: 1 << 11,
-    DIRECT_MESSAGES: 1 << 12,
-    DIRECT_MESSAGE_REACTIONS: 1 << 13,
-    DIRECT_MESSAGE_TYPING: 1 << 14,
-    MESSAGE_CONTENT: 1 << 15,
-    GUILD_SCHEDULED_EVENTS: 1 << 16,
-    AUTO_MODERATION_CONFIGURATION: 1 << 20,
-    AUTO_MODERATION_EXECUTION: 1 << 21,
-  };
+const LEGACY_FLAGS: Record<string, number> = {
+  GUILDS: 1 << 0,
+  GUILD_MEMBERS: 1 << 1,
+  GUILD_BANS: 1 << 2,
+  GUILD_EMOJIS_AND_STICKERS: 1 << 3,
+  GUILD_INTEGRATIONS: 1 << 4,
+  GUILD_WEBHOOKS: 1 << 5,
+  GUILD_INVITES: 1 << 6,
+  GUILD_VOICE_STATES: 1 << 7,
+  GUILD_PRESENCES: 1 << 8,
+  GUILD_MESSAGES: 1 << 9,
+  GUILD_MESSAGE_REACTIONS: 1 << 10,
+  GUILD_MESSAGE_TYPING: 1 << 11,
+  DIRECT_MESSAGES: 1 << 12,
+  DIRECT_MESSAGE_REACTIONS: 1 << 13,
+  DIRECT_MESSAGE_TYPING: 1 << 14,
+  MESSAGE_CONTENT: 1 << 15,
+  GUILD_SCHEDULED_EVENTS: 1 << 16,
+  AUTO_MODERATION_CONFIGURATION: 1 << 20,
+  AUTO_MODERATION_EXECUTION: 1 << 21,
+};
 
-  public static override defaultBit = 0;
-  public static readonly ALL: number = Object.values(Intents.FLAGS).reduce((all, p) => all | p, 0);
+// Filter out numeric reverse mapping from GatewayIntentBits
+const GATEWAY_FLAGS: Record<string, number> = {};
+for (const [key, value] of Object.entries(GatewayIntentBits)) {
+  if (typeof value === 'number') {
+    GATEWAY_FLAGS[key] = value;
+  }
 }
 
-export default Intents;
+const COMBINED_FLAGS: Record<string, number> = {
+  ...GATEWAY_FLAGS,
+  ...LEGACY_FLAGS,
+};
+
+export class IntentsBitField extends BitField<IntentsString, number> {
+  public static override Flags: Record<string, number> = COMBINED_FLAGS;
+  public static override FLAGS: Record<string, number> = COMBINED_FLAGS;
+
+  public static override defaultBit = 0;
+  public static readonly All: number = Object.values(COMBINED_FLAGS).reduce((all, p) => all | p, 0);
+  public static readonly ALL: number = IntentsBitField.All;
+}
+
+export { IntentsBitField as Intents };
+export default IntentsBitField;

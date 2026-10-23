@@ -760,6 +760,30 @@ export class Client extends BaseClient {
     if (!Array.isArray(options.partials)) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'partials', 'an Array');
     }
+    const partialMap: Record<string | number, string> = {
+      0: 'USER',
+      USER: 'USER',
+      User: 'USER',
+      1: 'CHANNEL',
+      CHANNEL: 'CHANNEL',
+      Channel: 'CHANNEL',
+      2: 'GUILD_MEMBER',
+      GUILD_MEMBER: 'GUILD_MEMBER',
+      GuildMember: 'GUILD_MEMBER',
+      3: 'MESSAGE',
+      MESSAGE: 'MESSAGE',
+      Message: 'MESSAGE',
+      4: 'REACTION',
+      REACTION: 'REACTION',
+      Reaction: 'REACTION',
+      5: 'GUILD_SCHEDULED_EVENT',
+      GUILD_SCHEDULED_EVENT: 'GUILD_SCHEDULED_EVENT',
+      GuildScheduledEvent: 'GUILD_SCHEDULED_EVENT',
+      6: 'THREAD_MEMBER',
+      THREAD_MEMBER: 'THREAD_MEMBER',
+      ThreadMember: 'THREAD_MEMBER',
+    };
+    options.partials = options.partials.map(p => (partialMap[p] ?? p) as typeof options.partials[number]);
     if (typeof options.DMChannelVoiceStatusSync !== 'number' || Number.isNaN(options.DMChannelVoiceStatusSync)) {
       throw new TypeError('CLIENT_INVALID_OPTION', 'DMChannelVoiceStatusSync', 'a number');
     }

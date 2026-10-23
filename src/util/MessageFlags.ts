@@ -1,7 +1,11 @@
+import { MessageFlags as APIMessageFlags } from 'discord-api-types/v10';
 import { BitField } from './BitField.js';
 import type { BitFieldResolvable } from '../types/index.js';
 
+export { APIMessageFlags };
+
 export type MessageFlagsString =
+  | keyof typeof APIMessageFlags
   | 'CROSSPOSTED'
   | 'IS_CROSSPOST'
   | 'SUPPRESS_EMBEDS'
@@ -20,26 +24,35 @@ export type MessageFlagsString =
 
 export type MessageFlagsResolvable = BitFieldResolvable<MessageFlagsString, number>;
 
-export class MessageFlags extends BitField<MessageFlagsString, number> {
-  public static override FLAGS: Record<MessageFlagsString, number> = {
-    CROSSPOSTED: 1 << 0,
-    IS_CROSSPOST: 1 << 1,
-    SUPPRESS_EMBEDS: 1 << 2,
-    SOURCE_MESSAGE_DELETED: 1 << 3,
-    URGENT: 1 << 4,
-    HAS_THREAD: 1 << 5,
-    EPHEMERAL: 1 << 6,
-    LOADING: 1 << 7,
-    FAILED_TO_MENTION_SOME_ROLES_IN_THREAD: 1 << 8,
-    GUILD_FEED_HIDDEN: 1 << 9,
-    SHOULD_SHOW_LINK_NOT_DISCORD_WARNING: 1 << 10,
-    SUPPRESS_NOTIFICATIONS: 1 << 12,
-    IS_VOICE_MESSAGE: 1 << 13,
-    HAS_SNAPSHOT: 1 << 14,
-    IS_COMPONENTS_V2: 1 << 15,
-  };
+const LEGACY_FLAGS: Record<string, number> = {
+  CROSSPOSTED: 1 << 0,
+  IS_CROSSPOST: 1 << 1,
+  SUPPRESS_EMBEDS: 1 << 2,
+  SOURCE_MESSAGE_DELETED: 1 << 3,
+  URGENT: 1 << 4,
+  HAS_THREAD: 1 << 5,
+  EPHEMERAL: 1 << 6,
+  LOADING: 1 << 7,
+  FAILED_TO_MENTION_SOME_ROLES_IN_THREAD: 1 << 8,
+  GUILD_FEED_HIDDEN: 1 << 9,
+  SHOULD_SHOW_LINK_NOT_DISCORD_WARNING: 1 << 10,
+  SUPPRESS_NOTIFICATIONS: 1 << 12,
+  IS_VOICE_MESSAGE: 1 << 13,
+  HAS_SNAPSHOT: 1 << 14,
+  IS_COMPONENTS_V2: 1 << 15,
+};
+
+const COMBINED_FLAGS: Record<string, number> = {
+  ...APIMessageFlags,
+  ...LEGACY_FLAGS,
+};
+
+export class MessageFlagsBitField extends BitField<MessageFlagsString, number> {
+  public static override Flags: Record<string, number> = COMBINED_FLAGS;
+  public static override FLAGS: Record<string, number> = COMBINED_FLAGS;
 
   public static override defaultBit = 0;
 }
 
-export default MessageFlags;
+export { MessageFlagsBitField as MessageFlags };
+export default MessageFlagsBitField;

@@ -37,9 +37,18 @@ export class MessageAttachment {
   public flags: Readonly<AttachmentFlags> = new AttachmentFlags().freeze();
   public title: string | null = null;
 
-  public constructor(attachment?: unknown, name: string | null = null, data?: APIAttachment) {
+  public constructor(
+    attachment?: unknown,
+    dataOrName: string | { name?: string; description?: string } | null = null,
+    data?: APIAttachment,
+  ) {
     this.attachment = attachment;
-    this.name = name;
+    if (typeof dataOrName === 'object' && dataOrName !== null) {
+      this.name = dataOrName.name ?? null;
+      if (dataOrName.description) this.description = dataOrName.description;
+    } else {
+      this.name = dataOrName;
+    }
     if (data) this._patch(data);
   }
 
@@ -131,4 +140,5 @@ export class MessageAttachment {
   }
 }
 
+export const AttachmentBuilder = MessageAttachment;
 export default MessageAttachment;

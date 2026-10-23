@@ -24,6 +24,9 @@ export function createComponent(
   client?: Client | WebhookClient | null,
 ): AnyComponent | null {
   if (!data) return null;
+  if (typeof (data as { toJSON?: unknown }).toJSON === 'function' && !(data instanceof BaseMessageComponent)) {
+    data = (data as { toJSON(): Record<string, unknown> }).toJSON();
+  }
 
   let component: AnyComponent | null = null;
   let type = (data as { type?: MessageComponentTypeResolvable }).type;

@@ -1,6 +1,58 @@
 import './structures/ComponentFactory.js';
 import './structures/ChannelFactory.js';
 
+// Builders & Formatters from @discordjs/builders (v14 parity)
+export {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ChannelSelectMenuBuilder,
+  ContextMenuCommandBuilder,
+  EmbedBuilder,
+  MentionableSelectMenuBuilder,
+  ModalBuilder,
+  RoleSelectMenuBuilder,
+  SelectMenuBuilder,
+  SelectMenuOptionBuilder,
+  SlashCommandAttachmentOption,
+  SlashCommandBooleanOption,
+  SlashCommandBuilder,
+  SlashCommandChannelOption,
+  SlashCommandIntegerOption,
+  SlashCommandMentionableOption,
+  SlashCommandNumberOption,
+  SlashCommandRoleOption,
+  SlashCommandStringOption,
+  SlashCommandSubcommandBuilder,
+  SlashCommandSubcommandGroupBuilder,
+  SlashCommandUserOption,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  TextInputBuilder,
+  UserSelectMenuBuilder,
+  blockQuote,
+  bold,
+  channelLink,
+  channelMention,
+  chatInputApplicationCommandMention,
+  codeBlock,
+  formatEmoji,
+  heading,
+  HeadingLevel,
+  hideLinkEmbed,
+  hyperlink,
+  inlineCode,
+  italic,
+  quote,
+  roleMention,
+  spoiler,
+  strikethrough,
+  time,
+  TimestampStyles,
+  underscore,
+  userMention,
+  Faces,
+} from '@discordjs/builders';
+
 // "Root" classes (starting points)
 export { default as BaseClient } from './client/BaseClient.js';
 export { Client } from './client/Client.js';
@@ -12,7 +64,7 @@ export { default as ShardClientUtil } from './sharding/ShardClientUtil.js';
 export { default as ShardingManager } from './sharding/ShardingManager.js';
 export { default as WebhookClient } from './client/WebhookClient.js';
 
-// Utilities
+// Utilities & BitFields
 export { default as ActivityFlags } from './util/ActivityFlags.js';
 export { default as ApplicationFlags } from './util/ApplicationFlags.js';
 export { default as AttachmentFlags } from './util/AttachmentFlags.js';
@@ -20,16 +72,37 @@ export { default as BaseManager } from './managers/BaseManager.js';
 export { default as BitField } from './util/BitField.js';
 export { Collection } from '@discordjs/collection';
 export * as Constants from './util/Constants.js';
+export {
+  ChannelType,
+  GatewayIntentBits,
+  PermissionFlagsBits,
+  ActivityType,
+  ComponentType,
+  ButtonStyle,
+  TextInputStyle,
+  FormattingPatterns,
+  Partials,
+  Events,
+} from './util/Constants.js';
 export { default as DataResolver } from './util/DataResolver.js';
 export { default as DiscordAPIError } from './rest/DiscordAPIError.js';
 export * as Formatters from './util/Formatters.js';
 export { default as GuildMemberFlags } from './util/GuildMemberFlags.js';
 export { default as HTTPError } from './rest/HTTPError.js';
-export { default as Intents } from './util/Intents.js';
+export {
+  IntentsBitField,
+  Intents,
+} from './util/Intents.js';
 export { default as LimitedCollection } from './util/LimitedCollection.js';
-export { default as MessageFlags } from './util/MessageFlags.js';
+export {
+  MessageFlagsBitField,
+  MessageFlags,
+} from './util/MessageFlags.js';
 export { default as Options } from './util/Options.js';
-export { default as Permissions } from './util/Permissions.js';
+export {
+  PermissionsBitField,
+  Permissions,
+} from './util/Permissions.js';
 export { default as RateLimitError } from './rest/RateLimitError.js';
 export { default as RoleFlags } from './util/RoleFlags.js';
 export { default as SnowflakeUtil } from './util/SnowflakeUtil.js';
@@ -38,7 +111,7 @@ export { default as SystemChannelFlags } from './util/SystemChannelFlags.js';
 export { default as ThreadMemberFlags } from './util/ThreadMemberFlags.js';
 export { default as UserFlags } from './util/UserFlags.js';
 export { default as Util } from './util/Util.js';
-export const version: string = '3.7.1';
+export const version: string = '14.27.0';
 
 // Managers
 export { default as ApplicationCommandManager } from './managers/ApplicationCommandManager.js';
@@ -130,7 +203,10 @@ export { default as InviteGuild } from './structures/InviteGuild.js';
 export { default as MediaChannel } from './structures/MediaChannel.js';
 export { Message } from './structures/Message.js';
 export { default as MessageActionRow } from './structures/MessageActionRow.js';
-export { default as MessageAttachment } from './structures/MessageAttachment.js';
+export {
+  MessageAttachment,
+  AttachmentBuilder,
+} from './structures/MessageAttachment.js';
 export { default as MessageButton } from './structures/MessageButton.js';
 export { default as MessageCollector } from './structures/MessageCollector.js';
 export { default as MessageEmbed } from './structures/MessageEmbed.js';
@@ -169,6 +245,22 @@ export { default as Widget } from './structures/Widget.js';
 export { default as WidgetMember } from './structures/WidgetMember.js';
 export { default as WelcomeChannel } from './structures/WelcomeChannel.js';
 export { default as WelcomeScreen } from './structures/WelcomeScreen.js';
+
+// Interactions
+export { default as AutocompleteInteraction } from './structures/AutocompleteInteraction.js';
+export { default as BaseCommandInteraction } from './structures/BaseCommandInteraction.js';
+export { default as ButtonInteraction } from './structures/ButtonInteraction.js';
+export { default as CommandInteraction } from './structures/CommandInteraction.js';
+export { default as ContextMenuInteraction } from './structures/ContextMenuInteraction.js';
+export { default as Interaction } from './structures/Interaction.js';
+export { default as InteractionCollector } from './structures/InteractionCollector.js';
+export { default as InteractionResponse } from './structures/InteractionResponse.js';
+export { default as InteractionWebhook } from './structures/InteractionWebhook.js';
+export { default as MessageComponentInteraction } from './structures/MessageComponentInteraction.js';
+export { default as MessageContextMenuInteraction } from './structures/MessageContextMenuInteraction.js';
+export { default as ModalSubmitInteraction } from './structures/ModalSubmitInteraction.js';
+export { default as SelectMenuInteraction } from './structures/SelectMenuInteraction.js';
+export { default as UserContextMenuInteraction } from './structures/UserContextMenuInteraction.js';
 
 export { default as WebSocket } from './WebSocket.js';
 

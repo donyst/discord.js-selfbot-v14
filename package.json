@@ -1,8 +1,8 @@
 {
   "name": "discord.js-selfbot-v13",
-  "version": "3.7.1",
+  "version": "14.27.0",
   "type": "module",
-  "description": "An unofficial discord.js fork for creating selfbots",
+  "description": "An unofficial discord.js v14 fork for creating selfbots and automating user accounts with full TypeScript support",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -29,8 +29,10 @@
   },
   "keywords": [
     "discord.js",
+    "discord.js v14",
     "discord.js v13",
     "selfbot",
+    "selfbot v14",
     "selfbot v13",
     "djs",
     "api",
@@ -38,7 +40,8 @@
     "node",
     "discord",
     "client",
-    "discordapp"
+    "discordapp",
+    "builders"
   ],
   "author": "Phạm Minh Đồng <dongdz.user@gmail.com> (https://github.com/donyst)",
   "contributors": [

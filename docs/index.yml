@@ -2,4 +2,22 @@
   files:
     - name: Welcome
       id: welcome
-      path: ../../README.md
+      path: ./readme.md
+    - name: Getting Started
+      id: getting-started
+      path: ./getting-started.md
+    - name: Client Emulation
+      id: client-emulation
+      path: ./client-emulation.md
+    - name: Interactions & Slash Commands
+      id: interactions
+      path: ./interactions.md
+    - name: Captcha & 2FA Handler
+      id: captcha-and-mfa
+      path: ./captcha-and-mfa.md
+    - name: Voice & Video Streaming
+      id: voice-and-video
+      path: ./voice-and-video.md
+    - name: FAQ & Safety
+      id: faq
+      path: ./faq.md

@@ -1,124 +1,235 @@
-> [!IMPORTANT]
-> ## Project Archival
-> 
-> **This project is no longer actively maintained and this repository has been archived.**
->
-> You can read the full announcement [here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/discussions/1743)
-
 <div align="center">
   <br />
   <p>
-    <a href="https://discord.js.org"><img src="https://discord.js.org/static/logo.svg" width="546" alt="discord.js" /></a>
+    <a href="https://github.com/donyst/discord.js-selfbot-v13"><img src="https://discord.js.org/static/logo.svg" width="450" alt="discord.js-selfbot-v13" /></a>
   </p>
-</div>
-
-> [!CAUTION]
-> **The use of this module under a different name on NPM (or another source besides this Github) is not associated with this library.**
-> **When using these libraries, you accept the risk of exposing your Discord Token.**
-
-## About
-
-<strong>Welcome to `discord.js-selfbot-v13@v3.7`, based on `discord.js@13.17` and backport `discord.js@14.21.0`</strong>
-
-- discord.js-selfbot-v13 is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the Discord API v9.
-
-
-<div align="center">
+  <h1>discord.js-selfbot-v13</h1>
   <p>
-    <a href="https://www.npmjs.com/package/discord.js-selfbot-v13"><img src="https://img.shields.io/npm/v/discord.js-selfbot-v13.svg" alt="npm version" /></a>
-    <a href="https://www.npmjs.com/package/discord.js-selfbot-v13"><img src="https://img.shields.io/npm/dt/discord.js-selfbot-v13.svg" alt="npm downloads" /></a>
-    <a href="https://github.com/aiko-chan-ai/discord.js-selfbot-v13/actions"><img src="https://github.com/aiko-chan-ai/discord.js-selfbot-v13/actions/workflows/lint.yml/badge.svg" alt="Tests status" /></a>
+    <strong>A modern, powerful, and actively maintained Node.js library for Discord User Accounts (Selfbots).</strong>
+  </p>
+  <p>
+    <a href="https://github.com/donyst/discord.js-selfbot-v13/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=flat-square" alt="License" /></a>
+    <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20.18.0-brightgreen.svg?style=flat-square" alt="Node Version" /></a>
+    <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-Ready-blue.svg?style=flat-square" alt="TypeScript" /></a>
+    <a href="https://github.com/donyst/discord.js-selfbot-v13/stargazers"><img src="https://img.shields.io/github/stars/donyst/discord.js-selfbot-v13?style=flat-square" alt="GitHub Stars" /></a>
+    <a href="https://github.com/donyst/discord.js-selfbot-v13/issues"><img src="https://img.shields.io/github/issues/donyst/discord.js-selfbot-v13?style=flat-square" alt="GitHub Issues" /></a>
   </p>
 </div>
 
-> [!WARNING]
-> **I don't take any responsibility for blocked Discord accounts that used this module.**
-
-> [!CAUTION]
-> **Using this on a user account is prohibited by the [Discord TOS](https://discord.com/terms) and can lead to the account block.**
-
-### <strong>[Document Website](https://discordjs-self-v13.netlify.app/)</strong>
-
-### <strong>[Example Code](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/tree/main/examples)</strong>
-
-## Features (User)
-- [x] Message
-- [x] ClientUser: Status, Activity, RemoteAuth, etc.
-- [X] Guild: Fetch Members, Join / Leave, Top emojis, etc.
-- [X] Interactions: Slash Commands, Buttons, Menu, Modal.
-- [X] Captcha & TOTP Handler
-- [X] Documentation
-- [x] Voice & Video
-- [ ] Everything
-
-## Installation
+---
 
 > [!NOTE]
-> **Node.js 20.18.0 or newer is required**
+> ### 🚀 Active Maintenance & Continuation
+> The original upstream repository (`aiko-chan-ai/discord.js-selfbot-v13`) was archived by its original author. This repository is the **actively maintained fork** maintained by **[Phạm Minh Đồng (@donyst)](https://github.com/donyst)**.
+>
+> We continuously maintain compatibility with Discord's evolving APIs and provide high-fidelity client fingerprinting aligned with official Discord Desktop clients.
 
-```sh-session
-npm install discord.js-selfbot-v13@latest
+> [!CAUTION]
+> ### ⚠️ Discord Terms of Service & Disclaimer
+> - Automating user accounts (Selfbotting) is strictly against the **[Discord Terms of Service](https://discord.com/terms)** and Community Guidelines.
+> - Using this library may result in account termination or phone/captcha verification.
+> - This software is created for educational, research, and reverse-engineering purposes. **The authors and maintainers take no responsibility for any actions taken on your account.**
+> - **Never share your Discord token with anyone.**
+
+---
+
+## 🌟 Key Highlights
+
+- **Desktop Client Parity**: Built with **Discord Desktop 1.0.9265** parity (Chromium 148, Electron 42.11.15, Build `647615`, Native `96160`).
+- **Complete Interactions**: Full support for slash commands (`/`), buttons, select menus, modal popups, and deferred responses.
+- **Modern Architecture**: Full **TypeScript** typing, native **ESM** (`import`) and **CommonJS** (`require`) dual support.
+- **Voice & Video**: Voice channels, screenshare / Go-Live video streaming via WebRTC/Werift RTP.
+- **Advanced Auth**: QR code Remote Auth login, 2FA/TOTP verification handler, and Captcha callback hooks.
+- **Rich Presence**: Custom Status, Activity with Spotify / Samsung Galaxy RPC, and User Application authorization.
+
+---
+
+## 📦 Installation
+
+> **Requirement**: [Node.js](https://nodejs.org) **20.18.0** or newer.
+
+Install via your preferred package manager:
+
+```bash
+# Using npm
+npm install https://github.com/donyst/discord.js-selfbot-v13.git
+
+# Using pnpm
+pnpm add https://github.com/donyst/discord.js-selfbot-v13.git
+
+# Using yarn
+yarn add https://github.com/donyst/discord.js-selfbot-v13.git
 ```
 
-## Example
+---
 
-```js
+## 🚀 Quick Start
+
+### 1. Modern ESM / TypeScript
+
+```typescript
+import { Client } from 'discord.js-selfbot-v13';
+
+const client = new Client({
+  checkUpdate: false,
+});
+
+client.on('ready', () => {
+  console.log(`Logined in as ${client.user?.tag} (${client.user?.id})!`);
+});
+
+client.on('messageCreate', async (message) => {
+  if (message.content === '!ping') {
+    await message.reply('Pong! 🏓');
+  }
+});
+
+client.login(process.env.DISCORD_TOKEN);
+```
+
+### 2. CommonJS (CJS)
+
+```javascript
 const { Client } = require('discord.js-selfbot-v13');
+
 const client = new Client();
 
 client.on('ready', async () => {
   console.log(`${client.user.username} is ready!`);
-})
+});
 
-client.login('token');
+client.login('YOUR_DISCORD_TOKEN');
 ```
 
-## Get Token ?
+---
 
-- Based: [findByProps](https://discord.com/channels/603970300668805120/1085682686607249478/1085682686607249478)
+## ⚡ Interactions & Slash Commands
 
-<strong>Run code (Discord Console - [Ctrl + Shift + I])</strong>
+Triggering slash commands with user accounts:
 
-```js
+```typescript
+import { Client, TextChannel } from 'discord.js-selfbot-v13';
+
+const client = new Client();
+
+client.on('ready', async () => {
+  const channel = (await client.channels.fetch('CHANNEL_ID')) as TextChannel;
+
+  // Send a slash command: /help
+  const response = await channel.sendSlash('BOT_APPLICATION_ID', 'help');
+  console.log('Command response:', response);
+
+  // Send a slash command with arguments: /ban user:123 reason:"Spam"
+  await channel.sendSlash('BOT_APPLICATION_ID', 'ban', '1234567890', 'Spam');
+});
+
+client.login(process.env.DISCORD_TOKEN);
+```
+
+For advanced interactions (Modals, Select Menus, Subcommands), check out our [Slash Command Guide](docs/slash-commands.md) and [Examples Directory](examples/).
+
+---
+
+## 📱 Rich Presence & Custom Status
+
+```typescript
+client.on('ready', () => {
+  client.user?.setPresence({
+    status: 'online',
+    activities: [
+      {
+        name: 'Visual Studio Code',
+        type: 'PLAYING',
+        details: 'Developing discord.js-selfbot-v13',
+        state: 'Workspace: TypeScript',
+        timestamps: { start: Date.now() },
+      },
+    ],
+  });
+});
+```
+
+See [examples/RichPresence.js](examples/RichPresence.js) and [examples/SamsungRPC.js](examples/SamsungRPC.js) for more presets.
+
+---
+
+## 🔑 How to Retrieve Your User Token
+
+1. Open Discord in your desktop browser (Chrome, Brave, Edge, etc.) or open Discord Desktop.
+2. Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd> (or <kbd>Cmd</kbd> + <kbd>Option</kbd> + <kbd>I</kbd> on macOS) to open Developer Tools.
+3. Switch to the **Console** tab and execute:
+
+```javascript
 window.webpackChunkdiscord_app.push([
-	[Symbol()],
-	{},
-	req => {
-		if (!req.c) return;
-		for (let m of Object.values(req.c)) {
-			try {
-				if (!m.exports || m.exports === window) continue;
-				if (m.exports?.getToken) return copy(m.exports.getToken());
-				for (let ex in m.exports) {
-					if (m.exports?.[ex]?.getToken && m.exports[ex][Symbol.toStringTag] !== 'IntlMessagesProxy') return copy(m.exports[ex].getToken());
-				}
-			} catch {}
-		}
-	},
+  [Symbol()],
+  {},
+  (req) => {
+    if (!req.c) return;
+    for (let m of Object.values(req.c)) {
+      try {
+        if (!m.exports || m.exports === window) continue;
+        if (m.exports?.getToken) return copy(m.exports.getToken());
+        for (let ex in m.exports) {
+          if (m.exports?.[ex]?.getToken && m.exports[ex][Symbol.toStringTag] !== 'IntlMessagesProxy') {
+            return copy(m.exports[ex].getToken());
+          }
+        }
+      } catch {}
+    }
+  },
 ]);
-
 window.webpackChunkdiscord_app.pop();
-console.log('%cWorked!', 'font-size: 50px');
-console.log(`%cYou now have your token in the clipboard!`, 'font-size: 16px');
+console.log('%cSuccess! Token copied to clipboard.', 'color: #57F287; font-size: 16px;');
 ```
 
-## Contributing
+> [!WARNING]
+> Keep your token secret. Anyone with your token has full access to your Discord account.
 
-- Before creating an issue, please ensure that it hasn't already been reported/suggested, and double-check the
-[documentation](https://discordjs-self-v13.netlify.app/).  
-- See [the contribution guide](https://github.com/discordjs/discord.js/blob/main/.github/CONTRIBUTING.md) if you'd like to submit a PR.
+---
 
-## Need help?
-Github Discussion: [Here](https://github.com/aiko-chan-ai/discord.js-selfbot-v13/discussions)
+## 📚 Documentation
 
-## Credits
-- [Discord.js](https://github.com/discordjs/discord.js)
+Detailed guides and references can be found in the [`docs/`](docs/) directory:
 
-## <strong>Other project(s)
+- [Documentation Index](docs/readme.md)
+- [Getting Started & Configuration](docs/getting-started.md)
+- [Client Emulation & Super-Properties](docs/client-emulation.md)
+- [Interactions & Slash Commands](docs/interactions.md)
+- [Captcha & MFA Handling](docs/captcha-and-mfa.md)
+- [Voice & Video Streaming](docs/voice-and-video.md)
+- [Frequently Asked Questions & Safety](docs/faq.md)
 
-- 📘 [***aiko-chan-ai/DiscordBotClient***](https://github.com/aiko-chan-ai/DiscordBotClient) <br/>
-  A patched version of discord, with bot login support
+---
 
-## Star History
+## 👥 Authors & Contributors
 
-[![Star History Chart](https://api.star-history.com/svg?repos=aiko-chan-ai/discord.js-selfbot-v13&type=Date)](https://star-history.com/#aiko-chan-ai/discord.js-selfbot-v13&Date)
+This project is made possible thanks to the following authors and contributors:
+
+### 👑 Project Lead & Current Maintainer (2024 - Present)
+- **[Phạm Minh Đồng (@donyst)](https://github.com/donyst)**
+  - Email: [dongdz.user@gmail.com](mailto:dongdz.user@gmail.com)
+  - Lead developer, protocol reverse-engineering, Discord Desktop parity sync, TypeScript architecture.
+
+### 💡 Original Selfbot Creator (2022 - 2024)
+- **[aiko-chan-ai](https://github.com/aiko-chan-ai)**
+  - Original architect of `discord.js-selfbot-v13`.
+
+### 🏛️ Upstream Foundation
+- **[discord.js Team](https://github.com/discordjs)**
+  - Creators of the foundation library `discord.js`.
+
+See [AUTHORS.md](AUTHORS.md) for full attribution details.
+
+---
+
+## 📄 License
+
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.  
+See the [LICENSE](LICENSE) file for complete terms.
+
+```
+discord.js-selfbot-v13
+Copyright (C) 2024-2026 Phạm Minh Đồng (donyst) <dongdz.user@gmail.com>
+Copyright (C) 2022-2024 aiko-chan-ai
+Copyright (C) 2015-2022 discord.js contributors
+```

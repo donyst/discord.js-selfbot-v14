@@ -83,3 +83,10 @@ data/
 update.mjs
 yarn.lock
 package-lock.json
+
+# Capture Kit runtime data & private profiles
+capture-kit/browser-profile-*
+capture-kit/captures/*
+!capture-kit/captures/discord-qr-sync-20261016-014754/
+capture-kit/**/__pycache__/
+/capture-kit

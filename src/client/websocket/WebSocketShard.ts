@@ -26,6 +26,12 @@ try {
   zlib = mod.default ?? mod;
 } catch {}
 
+let zstdDecompress: ((buf: Uint8Array) => Uint8Array) | null = null;
+try {
+  const mod = (await import('fzstd' as string)) as unknown as { decompress?: (buf: Uint8Array) => Uint8Array };
+  zstdDecompress = mod.decompress ?? null;
+} catch {}
+
 export interface WebSocketCloseEvent {
   code: number;
   reason?: string;
@@ -66,6 +72,7 @@ export class WebSocketShard extends EventEmitter {
   private ratelimit: RateLimitState;
   public connection: import('ws').WebSocket | null;
   private inflate: InflateInstance | null;
+  private compressionMode: 'zlib-stream' | 'zstd-stream' | 'none' = 'none';
   private helloTimeout: NodeJS.Timeout | null;
   private wsCloseTimeout: NodeJS.Timeout | null;
   public eventsAttached: boolean;
@@ -169,13 +176,19 @@ export class WebSocketShard extends EventEmitter {
 
       const wsQuery: Record<string, string | number> = { v: client.options.ws.version };
 
-      if (zlib) {
+      if (client.options.ws.compress === 'zstd-stream' && zstdDecompress) {
+        this.compressionMode = 'zstd-stream';
+        wsQuery.compress = 'zstd-stream';
+      } else if (zlib && client.options.ws.compress !== false) {
+        this.compressionMode = 'zlib-stream';
         this.inflate = new zlib.Inflate({
           chunkSize: 65535,
           flush: zlib.Z_SYNC_FLUSH,
           to: WebSocket.encoding === 'json' ? 'string' : '',
         });
         wsQuery.compress = 'zlib-stream';
+      } else {
+        this.compressionMode = 'none';
       }
 
       this.debug(
@@ -183,7 +196,7 @@ export class WebSocketShard extends EventEmitter {
     Gateway    : ${gateway}
     Version    : ${client.options.ws.version}
     Encoding   : ${WebSocket.encoding}
-    Compression: ${zlib ? 'zlib-stream' : 'none'}
+    Compression: ${this.compressionMode}
     Agent      : ${Util.verifyProxyAgent(client.options.ws.agent)}`,
       );
 
@@ -223,7 +236,15 @@ export class WebSocketShard extends EventEmitter {
       byteData = data as Uint8Array;
     }
 
-    if (zlib && this.inflate) {
+    if (this.compressionMode === 'zstd-stream' && zstdDecompress) {
+      try {
+        const decompressed = zstdDecompress(byteData);
+        raw = Buffer.from(decompressed);
+      } catch (err) {
+        this.manager.client.emit(Events.SHARD_ERROR, err, this.id);
+        return;
+      }
+    } else if (zlib && this.inflate && this.compressionMode === 'zlib-stream') {
       const l = byteData.length;
       const flush =
         l >= 4 && byteData[l - 4] === 0x00 && byteData[l - 3] === 0x00 && byteData[l - 2] === 0xff && byteData[l - 1] === 0xff;

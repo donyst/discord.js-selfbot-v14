@@ -53,7 +53,7 @@ export interface HTTPOptions {
 
 export interface WebsocketOptions {
   capabilities: number;
-  compress: boolean;
+  compress: boolean | 'zlib-stream' | 'zstd-stream';
   version: number;
   agent?: unknown;
   properties: SuperProperties;

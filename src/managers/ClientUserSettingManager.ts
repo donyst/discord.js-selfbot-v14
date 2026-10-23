@@ -6,6 +6,7 @@ import { ActivityTypes } from '../util/Constants.js';
 import type { Snowflake, EmojiIdentifierResolvable } from '../types/index.js';
 import type { Client } from '../client/Client.js';
 import type { Guild } from '../structures/Guild.js';
+import { UserSettingsProto, type PreloadedUserSettingsData } from '../util/UserSettingsProto.js';
 
 export interface FriendSourceFlags {
   all: boolean | null;
@@ -258,6 +259,22 @@ export class ClientUserSettingManager extends BaseManager {
     }).users('@me')['settings-proto'](type);
     const res = await route.patch({ data: { settings: protoBase64 } });
     return res.settings;
+  }
+
+  /**
+   * Fetches and decodes typed PreloadedUserSettings (Theme, Status, Custom Status, Developer Mode, etc.).
+   */
+  public async getPreloadedSettings(): Promise<PreloadedUserSettingsData> {
+    const rawBase64 = await this.fetchProto(1);
+    return UserSettingsProto.decodePreloaded(rawBase64);
+  }
+
+  /**
+   * Encodes and updates typed PreloadedUserSettings to Discord's official desktop settings endpoint.
+   */
+  public async updatePreloadedSettings(settings: PreloadedUserSettingsData): Promise<string> {
+    const protoBase64 = UserSettingsProto.encodePreloaded(settings);
+    return this.editProto(1, protoBase64);
   }
 
   /**

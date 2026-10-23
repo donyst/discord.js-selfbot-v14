@@ -277,6 +277,7 @@ export { Poll } from './structures/Poll.js';
 export { PollAnswer } from './structures/PollAnswer.js';
 export { default as Recorder } from './client/voice/receiver/Recorder.js';
 export { default as VoiceConnection, StreamConnection, StreamConnectionReadonly } from './client/voice/VoiceConnection.js';
+export { GoLiveStreamer, type GoLiveStreamOptions } from './client/voice/video/GoLiveStreamer.js';
 
 // Reverse-Engineered Desktop Subsystems & Anti-Detection
 export { ClientFingerprintManager, type FingerprintData, type ClientPlatformMode } from './util/ClientFingerprintManager.js';
@@ -286,6 +287,8 @@ export { SoundboardManager, type SoundboardCreateData, type SoundboardPlayOption
 export { SoundboardSound, type SoundboardEditData, type RawSoundboardSoundData } from './structures/SoundboardSound.js';
 export { GameDetectionManager, type DetectableApplication, type RunningGameInfo, type GameDetectionOptions } from './managers/GameDetectionManager.js';
 export { DaveProtocolManager, DaveState, type DaveSessionInitOptions, type DaveStateUpdate } from './client/voice/dave/DaveProtocolManager.js';
+export { ProtobufReader, ProtobufWriter, WireType, type ProtobufField } from './util/ProtobufWire.js';
+export { UserSettingsProto, type PreloadedUserSettingsData, type AppearanceSettings, type CustomStatusSettings } from './util/UserSettingsProto.js';
 
 export * from './types/index.js';
 export * from './errors/index.js';

@@ -11,6 +11,7 @@ import { parseStreamKey } from './util/Function.js';
 import PlayInterface, { type StreamOptions, type VideoOptions } from './util/PlayInterface.js';
 import Silence from './util/Silence.js';
 import { DaveProtocolManager } from './dave/DaveProtocolManager.js';
+import { GoLiveStreamer } from './video/GoLiveStreamer.js';
 import { DiscordError as Error } from '../../errors/index.js';
 import { Opcodes, VoiceOpcodes, VoiceStatus, Events } from '../../util/Constants.js';
 import Speaking from '../../util/Speaking.js';
@@ -651,6 +652,13 @@ export class VoiceConnection extends EventEmitter {
         });
       });
     });
+  }
+
+  /**
+   * Creates a dedicated GoLiveStreamer instance for high-level screen share and video broadcasting.
+   */
+  public createGoLiveStreamer(): GoLiveStreamer {
+    return new GoLiveStreamer(this);
   }
 
   public async joinStreamConnection(user: UserResolvable): Promise<StreamConnectionReadonly> {

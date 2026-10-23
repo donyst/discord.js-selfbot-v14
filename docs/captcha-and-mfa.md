@@ -55,18 +55,58 @@ await guild.delete(token);
 
 ## 3. Remote Auth Login via QR Code
 
-`discord.js-selfbot-v13` supports Discord's native QR code Remote Authentication gateway:
+`discord.js-selfbot-v13` includes support for Discord's native Remote Authentication gateway (v2 protocol), enabling passwordless, 1-click mobile login via QR code.
+
+### Basic Usage (Interactive Terminal QR)
 
 ```typescript
 import { Client } from 'discord.js-selfbot-v13';
 
 const client = new Client();
 
-client.on('qrCode', (qr) => {
-  console.log('Scan this QR code using the Discord mobile app:');
-  console.log(qr);
+client.on('ready', () => {
+  console.log(`Connected as ${client.user?.tag}!`);
 });
 
-// Start remote auth gateway session:
-client.QRLogin();
+// Starts session, prints ASCII QR in terminal, waits for mobile scan, and logs in:
+await client.QRLogin();
+```
+
+### Advanced Usage with Callbacks & Events
+
+```typescript
+await client.QRLogin({
+  terminal: true, // Automatically prints styled ASCII QR code to terminal
+  timeout: 120000, // Timeout in ms (default: 2 minutes)
+  onQR: (qrUrl, qrDataUrl) => {
+    console.log('Mobile Scan Link:', qrUrl);
+    // qrDataUrl contains base64 data:image/png;base64,... suitable for Web UI / GUI
+  },
+  onScan: (user) => {
+    if (user) {
+      console.log(`Mobile scan detected for ${user.username}#${user.discriminator}!`);
+      console.log('Please confirm login on your mobile device.');
+    }
+  },
+});
+```
+
+### Event-Driven Flow
+
+You can also listen to client lifecycle events:
+
+```typescript
+client.on('qrCode', (qrUrl, qrDataUrl) => {
+  console.log('New QR generated:', qrUrl);
+});
+
+client.on('qrScan', (user) => {
+  console.log(`User ${user.username} scanned the code`);
+});
+
+client.on('qrCancel', () => {
+  console.log('Login was cancelled on the mobile device');
+});
+
+await client.QRLogin({ terminal: false });
 ```

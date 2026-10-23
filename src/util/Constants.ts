@@ -343,6 +343,9 @@ export const Events = {
   VOICE_CHANNEL_EFFECT_SEND: 'voiceChannelEffectSend',
   VOICE_BROADCAST_SUBSCRIBE: 'subscribe',
   VOICE_BROADCAST_UNSUBSCRIBE: 'unsubscribe',
+  QR_CODE: 'qrCode',
+  QR_SCAN: 'qrScan',
+  QR_CANCEL: 'qrCancel',
 } as const;
 
 export type EventKey = (typeof Events)[keyof typeof Events];

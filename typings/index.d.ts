@@ -874,9 +874,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public refreshAttachmentURL(...urls: string[]): Promise<{ original: string; refreshed: string }[]>;
   public sleep(timeout: number): Promise<void>;
   public login(token?: string): Promise<string>;
-  /** @deprecated This method will not be updated until I find the most convenient way to implement MFA. */
-  public passLogin(email: string, password: string): Promise<string | null>;
-  public QRLogin(): Promise<void>;
+  public QRLogin(options?: QRLoginOptions): Promise<string>;
   public logout(): Promise<void>;
   public isReady(): this is Client<true>;
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */
@@ -5993,6 +5991,16 @@ export interface ClientEvents extends BaseClientEvents {
   callDelete: [call: CallState];
   messagePollVoteAdd: [pollAnswer: PollAnswer, userId: Snowflake];
   messagePollVoteRemove: [pollAnswer: PollAnswer, userId: Snowflake];
+  qrCode: [qrUrl: string, qrDataUrl: string];
+  qrScan: [user: UserRaw | null];
+  qrCancel: [];
+}
+
+export interface QRLoginOptions {
+  terminal?: boolean;
+  onQR?: (qrUrl: string, qrDataUrl: string) => void;
+  onScan?: (user: UserRaw | null) => void;
+  timeout?: number;
 }
 
 export interface ClientFetchInviteOptions {

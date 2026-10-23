@@ -101,6 +101,23 @@ client.on('ready', async () => {
 client.login('YOUR_DISCORD_TOKEN');
 ```
 
+### 3. QR Code Remote Auth (No Token Needed!)
+
+Log in directly by scanning an ASCII QR code with your Discord mobile app:
+
+```typescript
+import { Client } from 'discord.js-selfbot-v13';
+
+const client = new Client();
+
+client.on('ready', () => {
+  console.log(`Connected as ${client.user?.tag}!`);
+});
+
+// Starts remote auth session, prints QR to console, and auto-logs in:
+await client.QRLogin();
+```
+
 ---
 
 ## ⚡ Interactions & Slash Commands

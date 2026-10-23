@@ -10,6 +10,7 @@
     "test": "npm run typecheck",
     "typecheck": "tsc --noEmit",
     "build": "tsc",
+    "login:qr": "node examples/QRLogin.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write src/**/*.ts"

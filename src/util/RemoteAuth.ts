@@ -1,7 +1,6 @@
 import { Buffer } from 'node:buffer';
 import crypto from 'node:crypto';
 import EventEmitter from 'node:events';
-import { StringDecoder } from 'node:string_decoder';
 import { fetch } from 'undici';
 import WebSocket from 'ws';
 import qrcode from 'qrcode';
@@ -18,6 +17,7 @@ export const receiveEvent = {
   HELLO: 'hello',
   NONCE_PROOF: 'nonce_proof',
   PENDING_REMOTE_INIT: 'pending_remote_init',
+  FINGERPRINT: 'fingerprint',
   HEARTBEAT_ACK: 'heartbeat_ack',
   PENDING_TICKET: 'pending_ticket',
   CANCEL: 'cancel',
@@ -32,10 +32,13 @@ export const sendEvent = {
 
 export const Event = {
   READY: 'ready',
+  QR_CODE: 'qrCode',
   ERROR: 'error',
   CANCEL: 'cancel',
   WAIT_SCAN: 'pending',
+  SCAN: 'scan',
   FINISH: 'finish',
+  AUTHENTICATED: 'authenticated',
   CLOSED: 'closed',
   DEBUG: 'debug',
 } as const;
@@ -44,7 +47,7 @@ export interface UserRaw {
   id: Snowflake;
   username: string;
   discriminator: string;
-  avatar: string;
+  avatar: string | null;
 }
 
 export interface HelloPayload {
@@ -72,18 +75,49 @@ export interface RemoteAuthClient {
   login: (token: string) => Promise<string>;
 }
 
+export interface ClientFingerprintContext {
+  fingerprint?: string;
+  installationId?: string;
+  cookies: string[];
+  superProperties: string;
+}
+
+export interface QRLoginOptions {
+  /**
+   * Whether to automatically print the QR code in the terminal using ASCII blocks.
+   * @default true
+   */
+  terminal?: boolean;
+  /**
+   * Custom callback invoked when the QR code is generated.
+   * Provides the mobile Auth URL and base64 Data URL.
+   */
+  onQR?: (qrUrl: string, qrDataUrl: string) => void;
+  /**
+   * Custom callback invoked when a user scans the QR code on mobile.
+   */
+  onScan?: (user: UserRaw | null) => void;
+  /**
+   * Timeout in milliseconds before the QR login session expires.
+   * @default 120000 (2 minutes)
+   */
+  timeout?: number;
+}
+
 /**
- * Discord QR Code Remote Authentication Websocket
+ * Discord QR Code Remote Authentication Gateway Client (v2 protocol).
+ * Enables seamless login via Discord mobile app QR scan without entering credentials.
  */
 export class DiscordAuthWebsocket extends EventEmitter {
   #ws: WebSocket | null = null;
-  #heartbeatInterval: number | null = null;
+  #heartbeatTimer: NodeJS.Timeout | null = null;
   #expire: Date | null = null;
-  #publicKey: string | null = null;
+  #publicKey: Buffer | null = null;
   #privateKey: string | null = null;
   #ticket: string | null = null;
   #fingerprint = '';
-  #userDecryptString = '';
+  #user: UserRaw | null = null;
+  #clientFingerprintPromise: Promise<ClientFingerprintContext> | null = null;
 
   public token = '';
 
@@ -95,15 +129,75 @@ export class DiscordAuthWebsocket extends EventEmitter {
     return baseURL + this.#fingerprint;
   }
 
-  public get exprire(): Date | null {
+  public get expire(): Date | null {
     return this.#expire;
   }
 
+  /**
+   * Deprecated spelling preserved for backward compatibility.
+   * @deprecated Use `expire` instead.
+   */
+  public get exprire(): Date | null {
+    return this.expire;
+  }
+
   public get user(): UserRaw | null {
-    return this.#userDecryptString ? DiscordAuthWebsocket.decryptUser(this.#userDecryptString) : null;
+    return this.#user;
+  }
+
+  public get fingerprint(): string {
+    return this.#fingerprint;
+  }
+
+  /**
+   * Pre-flight: Fetches server-signed client fingerprint, installation ID,
+   * and security cookies from /api/v9/experiments.
+   */
+  public static async fetchClientFingerprint(superPropertiesBase64?: string): Promise<ClientFingerprintContext> {
+    const sp =
+      superPropertiesBase64 ||
+      Buffer.from(JSON.stringify(defaultClientOptions.ws.properties), 'utf-8').toString('base64');
+    let fingerprint: string | undefined;
+    let installationId: string | undefined;
+    const cookies: string[] = [];
+
+    try {
+      const res = await fetch('https://discord.com/api/v9/experiments', {
+        headers: {
+          'User-Agent': UserAgent,
+          'X-Super-Properties': sp,
+          Origin: 'https://discord.com',
+          Referer: 'https://discord.com/login',
+          Accept: '*/*',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+      });
+
+      const setCookies = (res.headers as { getSetCookie?: () => string[] }).getSetCookie?.() || [];
+      for (const sc of setCookies) {
+        const pair = sc.split(';')[0]?.trim();
+        if (pair) cookies.push(pair);
+      }
+
+      if (res.ok) {
+        const body = (await res.json()) as { fingerprint?: string; installation?: string };
+        fingerprint = body.fingerprint;
+        installationId = body.installation;
+      }
+    } catch {
+      // Graceful fallback
+    }
+
+    return {
+      fingerprint,
+      installationId,
+      cookies,
+      superProperties: sp,
+    };
   }
 
   #createWebSocket(url: string): void {
+    this.#clientFingerprintPromise = DiscordAuthWebsocket.fetchClientFingerprint();
     this.#ws = new WebSocket(url, {
       headers: {
         Origin: 'https://discord.com',
@@ -121,11 +215,13 @@ export class DiscordAuthWebsocket extends EventEmitter {
     });
 
     this.#ws.on('open', () => {
-      this.emit(Event.DEBUG, '[WS] Client Connected');
+      this.emit(Event.DEBUG, '[WS] Remote Auth Gateway Connected');
     });
 
     this.#ws.on('close', () => {
-      this.emit(Event.DEBUG, '[WS] Connection closed');
+      this.#stopHeartbeat();
+      this.emit(Event.DEBUG, '[WS] Remote Auth Gateway Connection Closed');
+      this.emit(Event.CLOSED);
     });
 
     this.#ws.on('message', (message: WebSocket.RawData) => {
@@ -134,50 +230,53 @@ export class DiscordAuthWebsocket extends EventEmitter {
   }
 
   #handleMessage(rawMessage: WebSocket.RawData): void {
-    const text = typeof rawMessage === 'string' ? rawMessage : rawMessage.toString('utf-8');
-    const message = JSON.parse(text) as { op: string } & Record<string, unknown>;
+    try {
+      const text = typeof rawMessage === 'string' ? rawMessage : rawMessage.toString('utf-8');
+      const message = JSON.parse(text) as { op: string } & Record<string, unknown>;
 
-    switch (message.op) {
-      case receiveEvent.HELLO: {
-        this.#ready(message as unknown as HelloPayload);
-        break;
-      }
+      switch (message.op) {
+        case receiveEvent.HELLO: {
+          this.#ready(message as unknown as HelloPayload);
+          break;
+        }
 
-      case receiveEvent.NONCE_PROOF: {
-        this.#receiveNonceProof(message as unknown as NonceProofPayload);
-        break;
-      }
+        case receiveEvent.NONCE_PROOF: {
+          this.#receiveNonceProof(message as unknown as NonceProofPayload);
+          break;
+        }
 
-      case receiveEvent.PENDING_REMOTE_INIT: {
-        const initPayload = message as unknown as PendingRemoteInitPayload;
-        this.#fingerprint = initPayload.fingerprint;
-        this.emit(Event.READY, this);
-        break;
-      }
+        case receiveEvent.PENDING_REMOTE_INIT:
+        case receiveEvent.FINGERPRINT: {
+          const initPayload = message as unknown as PendingRemoteInitPayload;
+          void this.#pendingRemoteInit(initPayload.fingerprint);
+          break;
+        }
 
-      case receiveEvent.HEARTBEAT_ACK: {
-        this.emit(Event.DEBUG, 'Heartbeat acknowledged.');
-        this.#heartbeatAck();
-        break;
-      }
+        case receiveEvent.HEARTBEAT_ACK: {
+          this.emit(Event.DEBUG, '[WS] Heartbeat ACK received');
+          break;
+        }
 
-      case receiveEvent.PENDING_TICKET: {
-        this.#pendingLogin(message as unknown as PendingTicketPayload);
-        break;
-      }
+        case receiveEvent.PENDING_TICKET: {
+          this.#pendingLogin(message as unknown as PendingTicketPayload);
+          break;
+        }
 
-      case receiveEvent.CANCEL: {
-        this.emit(Event.CANCEL, this);
-        this.destroy();
-        break;
-      }
+        case receiveEvent.CANCEL: {
+          this.emit(Event.CANCEL, this);
+          this.destroy();
+          break;
+        }
 
-      case receiveEvent.PENDING_LOGIN: {
-        const loginPayload = message as unknown as PendingLoginPayload;
-        this.#ticket = loginPayload.ticket;
-        void this.#findRealToken();
-        break;
+        case receiveEvent.PENDING_LOGIN: {
+          const loginPayload = message as unknown as PendingLoginPayload;
+          this.#ticket = loginPayload.ticket;
+          void this.#findRealToken();
+          break;
+        }
       }
+    } catch (err) {
+      this.emit(Event.ERROR, err instanceof Error ? err : new Error(String(err)));
     }
   }
 
@@ -187,91 +286,182 @@ export class DiscordAuthWebsocket extends EventEmitter {
     this.#ws.send(JSON.stringify(payload));
   }
 
-  #heartbeatAck(): void {
-    if (!this.#heartbeatInterval) return;
-    setTimeout(() => {
+  #startHeartbeat(interval: number): void {
+    this.#stopHeartbeat();
+    this.#heartbeatTimer = setInterval(() => {
       this.#send(sendEvent.HEARTBEAT);
-    }, this.#heartbeatInterval).unref();
+    }, interval);
+    this.#heartbeatTimer.unref?.();
+  }
+
+  #stopHeartbeat(): void {
+    if (this.#heartbeatTimer) {
+      clearInterval(this.#heartbeatTimer);
+      this.#heartbeatTimer = null;
+    }
   }
 
   #ready(data: HelloPayload): void {
-    this.emit(Event.DEBUG, 'Attempting server handshake...');
+    this.emit(Event.DEBUG, '[WS] Server Hello received. Initializing RSA key pair...');
     this.#expire = new Date(Date.now() + data.timeout_ms);
-    this.#heartbeatInterval = data.heartbeat_interval;
+    this.#startHeartbeat(data.heartbeat_interval);
     this.#createKey();
-    this.#heartbeatAck();
     this.#init();
   }
 
   #createKey(): void {
-    const key = crypto.generateKeyPairSync('rsa', {
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
       modulusLength: 2048,
-      publicKeyEncoding: {
-        type: 'spki',
-        format: 'pem',
-      },
-      privateKeyEncoding: {
-        type: 'pkcs1',
-        format: 'pem',
-      },
+      publicKeyEncoding: { type: 'spki', format: 'der' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
     });
-    this.#privateKey = key.privateKey;
-    this.#publicKey = key.publicKey;
-  }
-
-  #encodePublicKey(): string {
-    if (!this.#publicKey) return '';
-    const decoder = new StringDecoder('utf-8');
-    const pubKey = decoder.write(Buffer.from(this.#publicKey));
-    return pubKey.split('\n').slice(1, -2).join('');
+    this.#privateKey = privateKey;
+    this.#publicKey = publicKey;
   }
 
   #init(): void {
-    const publicKey = this.#encodePublicKey();
-    this.#send(sendEvent.INIT, { encoded_public_key: publicKey });
+    if (!this.#publicKey) return;
+    const encodedPublicKey = this.#publicKey.toString('base64');
+    this.#send(sendEvent.INIT, { encoded_public_key: encodedPublicKey });
   }
 
   #receiveNonceProof(data: NonceProofPayload): void {
-    const nonce = data.encrypted_nonce;
-    const decryptedNonce = this.#decryptPayload(nonce);
-    const proof = crypto
-      .createHash('sha256')
-      .update(decryptedNonce)
-      .digest()
-      .toString('base64')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+/, '')
-      .replace(/\s+$/, '');
-    this.#send(sendEvent.NONCE_PROOF, { proof });
-  }
-
-  #decryptPayload(encryptedPayload: string): Buffer {
-    const payload = Buffer.from(encryptedPayload, 'base64');
-    const decoder = new StringDecoder('utf-8');
-    const privateKey = decoder.write(Buffer.from(this.#privateKey!));
-    return crypto.privateDecrypt(
+    if (!this.#privateKey) return;
+    const decryptedNonce = crypto.privateDecrypt(
       {
-        key: privateKey,
+        key: this.#privateKey,
         padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
         oaepHash: 'sha256',
       },
-      payload,
+      Buffer.from(data.encrypted_nonce, 'base64'),
     );
+
+    // Discord v2 Remote Auth protocol: base64url encoding of the raw decrypted nonce
+    const nonce = decryptedNonce.toString('base64url');
+    this.#send(sendEvent.NONCE_PROOF, { nonce });
+  }
+
+  async #pendingRemoteInit(fingerprint: string): Promise<void> {
+    this.#fingerprint = fingerprint;
+    const qrUrl = baseURL + fingerprint;
+    let qrDataUrl = '';
+
+    try {
+      qrDataUrl = await qrcode.toDataURL(qrUrl, {
+        margin: 2,
+        color: { dark: '#5865F2', light: '#FFFFFF' },
+        width: 280,
+      });
+    } catch {
+      // ignore
+    }
+
+    this.emit(Event.READY, this);
+    this.emit(Event.QR_CODE, qrUrl, qrDataUrl);
   }
 
   #pendingLogin(data: PendingTicketPayload): void {
-    const userData = this.#decryptPayload(data.encrypted_user_payload);
-    this.#userDecryptString = userData.toString();
-    this.emit(Event.WAIT_SCAN, this.user);
+    if (!this.#privateKey) return;
+    try {
+      const decryptedUser = crypto.privateDecrypt(
+        {
+          key: this.#privateKey,
+          padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+          oaepHash: 'sha256',
+        },
+        Buffer.from(data.encrypted_user_payload, 'base64'),
+      );
+      const userStr = decryptedUser.toString('utf-8');
+      const match = userStr.match(/^(\d+):(\d{1,4}):([a-zA-Z0-9_]+):(.*)$/);
+      if (match) {
+        this.#user = {
+          id: match[1]!,
+          discriminator: match[2]!,
+          avatar: match[3] === '0' ? null : match[3]!,
+          username: match[4]!,
+        };
+      } else {
+        const parts = userStr.split(':');
+        this.#user = {
+          id: parts[0] || '',
+          discriminator: parts[1] || '0',
+          avatar: parts[2] === '0' ? null : (parts[2] || null),
+          username: parts[3] || 'Discord User',
+        };
+      }
+    } catch {
+      this.#user = null;
+    }
+
+    this.emit(Event.WAIT_SCAN, this.#user);
+    this.emit(Event.SCAN, this.#user);
   }
 
-  #awaitLogin(client: RemoteAuthClient): Promise<string> {
-    return new Promise(resolve => {
-      this.once(Event.FINISH, (token: string) => {
-        resolve(client.login(token));
+  async #findRealToken(): Promise<boolean> {
+    if (!this.#privateKey) return false;
+
+    try {
+      const fpData = await (this.#clientFingerprintPromise || DiscordAuthWebsocket.fetchClientFingerprint());
+
+      const headers: Record<string, string> = {
+        Accept: '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Content-Type': 'application/json',
+        Origin: 'https://discord.com',
+        Referer: 'https://discord.com/login',
+        'User-Agent': UserAgent,
+        'X-Super-Properties': fpData.superProperties,
+        'X-Discord-Locale': 'en-US',
+        'X-Discord-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      };
+
+      if (fpData.fingerprint) {
+        headers['X-Fingerprint'] = fpData.fingerprint;
+      }
+      if (fpData.installationId) {
+        headers['X-Installation-Id'] = fpData.installationId;
+      }
+      if (fpData.cookies.length > 0) {
+        headers['Cookie'] = fpData.cookies.join('; ');
+      }
+
+      const response = await fetch('https://discord.com/api/v9/users/@me/remote-auth/login', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          ticket: this.#ticket,
+        }),
       });
-    });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Failed to exchange remote auth ticket [${response.status}]: ${errText}`);
+      }
+
+      const res = (await response.json()) as { encrypted_token?: string };
+      if (!res.encrypted_token) {
+        throw new Error('No encrypted_token returned from Discord remote auth login API');
+      }
+
+      const decryptedToken = crypto.privateDecrypt(
+        {
+          key: this.#privateKey,
+          padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+          oaepHash: 'sha256',
+        },
+        Buffer.from(res.encrypted_token, 'base64'),
+      );
+
+      this.token = decryptedToken.toString('utf-8');
+      this.emit(Event.FINISH, this.token);
+      this.emit(Event.AUTHENTICATED, this.token);
+      this.destroy();
+      return true;
+    } catch (err) {
+      this.emit(Event.ERROR, err instanceof Error ? err : new Error(String(err)));
+      this.destroy();
+      return false;
+    }
   }
 
   public connect(client?: RemoteAuthClient): Promise<string | void> {
@@ -282,58 +472,72 @@ export class DiscordAuthWebsocket extends EventEmitter {
     return Promise.resolve();
   }
 
-  public destroy(): void {
-    if (!this.#ws) return;
-    this.#ws.close();
-    this.emit(Event.DEBUG, 'WebSocket closed.');
-    this.emit(Event.CLOSED);
-  }
-
-  public generateQR(): void {
-    if (!this.#fingerprint) return;
-    qrcode.toString(this.AuthURL, { type: 'utf8', errorCorrectionLevel: 'L' }, (err: unknown, url: string) => {
-      if (!err && url) {
-        console.log(url);
-      }
+  #awaitLogin(client: RemoteAuthClient): Promise<string> {
+    return new Promise((resolve, reject) => {
+      this.once(Event.FINISH, (token: string) => {
+        client
+          .login(token)
+          .then(() => resolve(token))
+          .catch(reject);
+      });
+      this.once(Event.ERROR, (err: Error) => {
+        reject(err);
+      });
+      this.once(Event.CANCEL, () => {
+        reject(new Error('Remote authentication session was cancelled on device.'));
+      });
     });
   }
 
-  async #findRealToken(): Promise<boolean> {
-    try {
-      const response = await fetch('https://discord.com/api/v9/users/@me/remote-auth/login', {
-        method: 'POST',
-        headers: {
-          Accept: '*/*',
-          'Accept-Language': 'en-US',
-          'Content-Type': 'application/json',
-          'Sec-Fetch-Dest': 'empty',
-          'Sec-Fetch-Mode': 'cors',
-          'Sec-Fetch-Site': 'same-origin',
-          'X-Debug-Options': 'bugReporterEnabled',
-          'X-Super-Properties': Buffer.from(JSON.stringify(defaultClientOptions.ws.properties), 'ascii').toString(
-            'base64',
-          ),
-          'X-Discord-Locale': 'en-US',
-          'User-Agent': UserAgent,
-          Referer: 'https://discord.com/channels/@me',
-          Connection: 'keep-alive',
-          Origin: 'https://discord.com',
-        },
-        body: JSON.stringify({
-          ticket: this.#ticket,
-        }),
-      });
+  /**
+   * Generates and prints the QR code in terminal ASCII art.
+   */
+  public generateQR(): void {
+    if (!this.#fingerprint) return;
+    void this.printTerminalQr();
+  }
 
-      const res = (await response.json()) as { encrypted_token?: string };
-      if (res.encrypted_token) {
-        this.token = this.#decryptPayload(res.encrypted_token).toString();
-      }
-      this.emit(Event.FINISH, this.token);
-      this.destroy();
-      return true;
+  /**
+   * Prints the QR code directly to the terminal with styled formatting.
+   */
+  public async printTerminalQr(options?: { small?: boolean }): Promise<string> {
+    if (!this.#fingerprint) return '';
+    const small = options?.small ?? true;
+
+    return new Promise((resolve, reject) => {
+      qrcode.toString(this.AuthURL, { type: 'terminal', small }, (err, text) => {
+        if (err) return reject(err);
+        console.log('\n================ Scan on Discord Mobile ================');
+        console.log(text);
+        console.log(`Link: ${this.AuthURL}\n`);
+        resolve(text);
+      });
+    });
+  }
+
+  /**
+   * Returns the QR code encoded as an image Data URL (data:image/png;base64,...).
+   */
+  public async getDataURL(): Promise<string> {
+    if (!this.#fingerprint) return '';
+    return qrcode.toDataURL(this.AuthURL, {
+      margin: 2,
+      color: { dark: '#5865F2', light: '#FFFFFF' },
+      width: 280,
+    });
+  }
+
+  public destroy(): void {
+    this.#stopHeartbeat();
+    if (!this.#ws) return;
+    try {
+      this.#ws.close();
     } catch {
-      return false;
+      // ignore
     }
+    this.#ws = null;
+    this.emit(Event.DEBUG, '[WS] WebSocket closed.');
+    this.emit(Event.CLOSED);
   }
 
   public static decryptUser(payload: string): UserRaw {
@@ -341,8 +545,8 @@ export class DiscordAuthWebsocket extends EventEmitter {
     return {
       id: values[0]!,
       discriminator: values[1]!,
-      avatar: values[2]!,
-      username: values[3]!,
+      avatar: values[2] === '0' ? null : (values[2] || null),
+      username: values[3] || 'Discord User',
     };
   }
 }

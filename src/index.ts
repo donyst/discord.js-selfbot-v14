@@ -173,7 +173,13 @@ export { default as WelcomeScreen } from './structures/WelcomeScreen.js';
 export { default as WebSocket } from './WebSocket.js';
 
 export { default as WebEmbed } from './structures/WebEmbed.js';
-export { default as DiscordAuthWebsocket } from './util/RemoteAuth.js';
+export {
+  default as DiscordAuthWebsocket,
+  Event as RemoteAuthEvent,
+  type UserRaw,
+  type QRLoginOptions,
+  type ClientFingerprintContext,
+} from './util/RemoteAuth.js';
 export { default as PurchasedFlags } from './util/PurchasedFlags.js';
 export { Poll } from './structures/Poll.js';
 export { PollAnswer } from './structures/PollAnswer.js';

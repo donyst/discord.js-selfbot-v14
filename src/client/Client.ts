@@ -34,7 +34,8 @@ import { Application } from '../structures/interfaces/Application.js';
 import { Events, Status } from '../util/Constants.js';
 import DataResolver from '../util/DataResolver.js';
 import Intents from '../util/Intents.js';
-import DiscordAuthWebsocket from '../util/RemoteAuth.js';
+import DiscordAuthWebsocket, { Event as RemoteAuthEvent, type QRLoginOptions, type UserRaw } from '../util/RemoteAuth.js';
+export type { QRLoginOptions, UserRaw };
 import Sweepers from '../util/Sweepers.js';
 import type {
   Snowflake,
@@ -241,10 +242,84 @@ export class Client extends BaseClient {
     }
   }
 
-  public QRLogin(): Promise<unknown> {
+  /**
+   * Logs into Discord by initiating a Remote Authentication session with a mobile QR code scan.
+   *
+   * @param options Configuration options including terminal printing and scan callbacks
+   * @returns A Promise that resolves with the acquired user token and completes client login
+   */
+  public async QRLogin(options?: QRLoginOptions): Promise<string> {
     const ws = new DiscordAuthWebsocket();
-    ws.once('ready', () => ws.generateQR());
-    return ws.connect(this);
+    const shouldPrintTerminal = options?.terminal !== false;
+
+    return new Promise((resolve, reject) => {
+      let timeoutTimer: NodeJS.Timeout | null = null;
+      const timeoutMs = options?.timeout ?? 120000;
+
+      if (timeoutMs > 0) {
+        timeoutTimer = setTimeout(() => {
+          ws.destroy();
+          reject(new Error(`QR Login timed out after ${timeoutMs}ms.`));
+        }, timeoutMs);
+      }
+
+      const cleanup = () => {
+        if (timeoutTimer) clearTimeout(timeoutTimer);
+      };
+
+      ws.on(RemoteAuthEvent.READY, async () => {
+        const qrUrl = ws.AuthURL;
+        let qrDataUrl = '';
+        try {
+          qrDataUrl = await ws.getDataURL();
+        } catch {
+          // ignore
+        }
+
+        if (shouldPrintTerminal) {
+          await ws.printTerminalQr();
+        }
+
+        this.emit(Events.QR_CODE, qrUrl, qrDataUrl);
+        options?.onQR?.(qrUrl, qrDataUrl);
+      });
+
+      ws.on(RemoteAuthEvent.WAIT_SCAN, (user: UserRaw | null) => {
+        if (shouldPrintTerminal && user) {
+          console.log(`\n📱 [SCAN DETECTED / ĐÃ QUÉT] User: ${user.username}#${user.discriminator} (${user.id})`);
+          console.log('👉 Please tap "Log In" / "Allow" on your phone to confirm.\n');
+        }
+        this.emit(Events.QR_SCAN, user);
+        options?.onScan?.(user);
+      });
+
+      ws.on(RemoteAuthEvent.CANCEL, () => {
+        cleanup();
+        this.emit(Events.QR_CANCEL);
+        reject(new Error('QR Login was cancelled on device.'));
+      });
+
+      ws.on(RemoteAuthEvent.ERROR, (err: Error) => {
+        cleanup();
+        this.emit(Events.ERROR, err);
+        reject(err);
+      });
+
+      ws.on(RemoteAuthEvent.FINISH, async (token: string) => {
+        cleanup();
+        try {
+          await this.login(token);
+          resolve(token);
+        } catch (loginErr) {
+          reject(loginErr);
+        }
+      });
+
+      ws.connect().catch((err: unknown) => {
+        cleanup();
+        reject(err instanceof Error ? err : new Error(String(err)));
+      });
+    });
   }
 
   /**

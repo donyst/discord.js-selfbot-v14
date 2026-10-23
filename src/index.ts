@@ -284,6 +284,8 @@ export { ClientHeartbeatManager, type ClientHeartbeatSessionData } from './clien
 export { DiscordIPCServer, IPCOpcodes, type DiscordIPCServerOptions, type ActivityPayload } from './client/DiscordIPCServer.js';
 export { SoundboardManager, type SoundboardCreateData, type SoundboardPlayOptions } from './managers/SoundboardManager.js';
 export { SoundboardSound, type SoundboardEditData, type RawSoundboardSoundData } from './structures/SoundboardSound.js';
+export { GameDetectionManager, type DetectableApplication, type RunningGameInfo, type GameDetectionOptions } from './managers/GameDetectionManager.js';
+export { DaveProtocolManager, DaveState, type DaveSessionInitOptions, type DaveStateUpdate } from './client/voice/dave/DaveProtocolManager.js';
 
 export * from './types/index.js';
 export * from './errors/index.js';

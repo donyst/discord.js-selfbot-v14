@@ -21,6 +21,7 @@ import { UserManager } from '../managers/UserManager.js';
 import { UserNoteManager } from '../managers/UserNoteManager.js';
 import { VoiceStateManager } from '../managers/VoiceStateManager.js';
 import { SoundboardManager } from '../managers/SoundboardManager.js';
+import { GameDetectionManager } from '../managers/GameDetectionManager.js';
 import { ClientHeartbeatManager } from './ClientHeartbeatManager.js';
 import { DiscordIPCServer } from './DiscordIPCServer.js';
 import { ClientFingerprintManager } from '../util/ClientFingerprintManager.js';
@@ -116,6 +117,7 @@ export class Client extends BaseClient {
   public sessions: SessionManager;
   public settings: ClientUserSettingManager;
   public soundboard: SoundboardManager;
+  public games: GameDetectionManager;
   public heartbeats: ClientHeartbeatManager;
   public ipc: DiscordIPCServer;
 
@@ -154,6 +156,7 @@ export class Client extends BaseClient {
     this.sessions = new SessionManager(this);
     this.settings = new ClientUserSettingManager(this);
     this.soundboard = new SoundboardManager(this);
+    this.games = new GameDetectionManager(this);
     this.heartbeats = new ClientHeartbeatManager(this);
     this.ipc = new DiscordIPCServer(this, typeof this.options.ipcServer === 'object' ? this.options.ipcServer : {});
 
@@ -396,6 +399,7 @@ export class Client extends BaseClient {
 
     this.sweepers.destroy();
     this.heartbeats.stop();
+    this.games.stopAutoDetection();
     void this.ipc.close();
     (this.ws as unknown as { destroy(): void }).destroy();
     this.token = null;

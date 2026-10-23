@@ -227,6 +227,40 @@ export class ClientUserSettingManager extends BaseManager {
   }
 
   /**
+   * Fetches binary user settings protobuf (Type 1: PreloadedUserSettings, Type 2: FrecencyUserSettings).
+   * @param type Protobuf setting type (1 = PreloadedUserSettings, 2 = FrecencyUserSettings)
+   * @returns Base64 encoded protobuf string
+   */
+  public async fetchProto(type: 1 | 2 = 1): Promise<string> {
+    const route = (this.client.api as unknown as {
+      users(id: string): {
+        ['settings-proto'](t: number): {
+          get(): Promise<{ settings: string }>;
+        };
+      };
+    }).users('@me')['settings-proto'](type);
+    const res = await route.get();
+    return res.settings;
+  }
+
+  /**
+   * Updates binary user settings protobuf with official desktop endpoint.
+   * @param type Protobuf setting type (1 = PreloadedUserSettings, 2 = FrecencyUserSettings)
+   * @param protoBase64 Base64 encoded protobuf string
+   */
+  public async editProto(type: 1 | 2, protoBase64: string): Promise<string> {
+    const route = (this.client.api as unknown as {
+      users(id: string): {
+        ['settings-proto'](t: number): {
+          patch(opts: { data: { settings: string } }): Promise<{ settings: string }>;
+        };
+      };
+    }).users('@me')['settings-proto'](type);
+    const res = await route.patch({ data: { settings: protoBase64 } });
+    return res.settings;
+  }
+
+  /**
    * Toggle compact mode
    */
   public toggleCompactMode(): Promise<this> {

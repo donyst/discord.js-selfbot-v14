@@ -149,9 +149,24 @@ export class VoiceWebSocket extends EventEmitter {
         (this.connection as unknown as { setVideoStatus(v: boolean): void }).setVideoStatus(false);
         break;
       case VoiceOpcodes.SESSION_DESCRIPTION: {
-        const d = packet.d as { secret_key: Uint8Array | number[] };
+        const d = packet.d as {
+          secret_key: Uint8Array | number[];
+          dave_protocol_version?: number;
+          mls_external_sender_package?: string;
+        };
         d.secret_key = new Uint8Array(d.secret_key);
+        if (d.dave_protocol_version && this.connection.dave) {
+          this.connection.dave.init({
+            protocolVersion: d.dave_protocol_version,
+            mlsExternalSenderPackage: d.mls_external_sender_package,
+          });
+        }
         this.emit('sessionDescription', d);
+        break;
+      }
+      case VoiceOpcodes.DAVE_PREPARE_EPOCH: {
+        const d = packet.d as { epoch: number; epoch_authenticator?: string };
+        this.connection.dave?.prepareEpoch(d.epoch, d.epoch_authenticator);
         break;
       }
       case VoiceOpcodes.CLIENT_CONNECT: {

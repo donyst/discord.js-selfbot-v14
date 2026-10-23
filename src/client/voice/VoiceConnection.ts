@@ -10,6 +10,7 @@ import VoiceReceiver from './receiver/Receiver.js';
 import { parseStreamKey } from './util/Function.js';
 import PlayInterface, { type StreamOptions, type VideoOptions } from './util/PlayInterface.js';
 import Silence from './util/Silence.js';
+import { DaveProtocolManager } from './dave/DaveProtocolManager.js';
 import { DiscordError as Error } from '../../errors/index.js';
 import { Opcodes, VoiceOpcodes, VoiceStatus, Events } from '../../util/Constants.js';
 import Speaking from '../../util/Speaking.js';
@@ -122,6 +123,7 @@ export class VoiceConnection extends EventEmitter {
   public sockets: VoiceSockets;
   public receiver: VoiceReceiver;
   public videoCodec: VideoCodec;
+  public dave!: DaveProtocolManager;
   public connectTimeout?: NodeJS.Timeout;
   protected _streamConnection: StreamConnection | null = null;
   protected _streamWatchConnection: Collection<Snowflake, StreamConnectionReadonly> = new Collection();
@@ -168,6 +170,7 @@ export class VoiceConnection extends EventEmitter {
     this._speaking = new Map();
     this.sockets = {};
     this.receiver = new VoiceReceiver(this);
+    this.dave = new DaveProtocolManager(this);
     this.videoCodec = 'H264';
     this.streamConnection = null;
     this.streamWatchConnection = new Collection();

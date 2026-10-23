@@ -5,10 +5,8 @@ import { fetch } from 'undici';
 import WebSocket from 'ws';
 import qrcode from 'qrcode';
 import { UserAgent } from './Constants.js';
-import { Options } from './Options.js';
+import { ClientFingerprintManager } from './ClientFingerprintManager.js';
 import type { Snowflake } from '../types/index.js';
-
-const defaultClientOptions = Options.createDefault();
 
 const baseURL = 'https://discord.com/ra/';
 const wsURL = 'wss://remote-auth-gateway.discord.gg/?v=2';
@@ -156,7 +154,7 @@ export class DiscordAuthWebsocket extends EventEmitter {
   public static async fetchClientFingerprint(superPropertiesBase64?: string): Promise<ClientFingerprintContext> {
     const sp =
       superPropertiesBase64 ||
-      Buffer.from(JSON.stringify(defaultClientOptions.ws.properties), 'utf-8').toString('base64');
+      ClientFingerprintManager.getSuperPropertiesBase64();
     let fingerprint: string | undefined;
     let installationId: string | undefined;
     const cookies: string[] = [];

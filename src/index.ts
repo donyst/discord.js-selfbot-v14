@@ -278,5 +278,12 @@ export { PollAnswer } from './structures/PollAnswer.js';
 export { default as Recorder } from './client/voice/receiver/Recorder.js';
 export { default as VoiceConnection, StreamConnection, StreamConnectionReadonly } from './client/voice/VoiceConnection.js';
 
+// Reverse-Engineered Desktop Subsystems & Anti-Detection
+export { ClientFingerprintManager, type FingerprintData, type ClientPlatformMode } from './util/ClientFingerprintManager.js';
+export { ClientHeartbeatManager, type ClientHeartbeatSessionData } from './client/ClientHeartbeatManager.js';
+export { DiscordIPCServer, IPCOpcodes, type DiscordIPCServerOptions, type ActivityPayload } from './client/DiscordIPCServer.js';
+export { SoundboardManager, type SoundboardCreateData, type SoundboardPlayOptions } from './managers/SoundboardManager.js';
+export { SoundboardSound, type SoundboardEditData, type RawSoundboardSoundData } from './structures/SoundboardSound.js';
+
 export * from './types/index.js';
 export * from './errors/index.js';

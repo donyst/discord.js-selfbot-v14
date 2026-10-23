@@ -93,6 +93,10 @@ export interface ClientOptions {
   sweepers: Record<string, unknown>;
   ws: WebsocketOptions;
   http: HTTPOptions;
+  ipcServer?: boolean | import('../client/DiscordIPCServer.js').DiscordIPCServerOptions;
+  heartbeats?: boolean;
+  fingerprintSync?: boolean | number;
+  platformMode?: import('./ClientFingerprintManager.js').ClientPlatformMode;
 }
 
 const DEFAULT_USER_AGENT =

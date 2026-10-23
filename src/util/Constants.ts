@@ -52,7 +52,7 @@ export const MaxBulkDeletableMessageAge = 1_209_600_000;
  * User agent string representing Discord Desktop
  */
 export const UserAgent =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9265 Chrome/134.0.6998.205 Electron/35.3.0 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9265 Chrome/148.0.7778.280 Electron/42.11.15 Safari/537.36';
 
 /**
  * Chrome TLS ciphers for client impersonation

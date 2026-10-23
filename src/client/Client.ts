@@ -20,6 +20,10 @@ import { SessionManager } from '../managers/SessionManager.js';
 import { UserManager } from '../managers/UserManager.js';
 import { UserNoteManager } from '../managers/UserNoteManager.js';
 import { VoiceStateManager } from '../managers/VoiceStateManager.js';
+import { SoundboardManager } from '../managers/SoundboardManager.js';
+import { ClientHeartbeatManager } from './ClientHeartbeatManager.js';
+import { DiscordIPCServer } from './DiscordIPCServer.js';
+import { ClientFingerprintManager } from '../util/ClientFingerprintManager.js';
 import { ShardClientUtil } from '../sharding/ShardClientUtil.js';
 import { ClientPresence } from '../structures/ClientPresence.js';
 import { GuildPreview } from '../structures/GuildPreview.js';
@@ -111,6 +115,9 @@ export class Client extends BaseClient {
   public billing: BillingManager;
   public sessions: SessionManager;
   public settings: ClientUserSettingManager;
+  public soundboard: SoundboardManager;
+  public heartbeats: ClientHeartbeatManager;
+  public ipc: DiscordIPCServer;
 
   public token: string | null;
   public user: ClientUser | null;
@@ -146,6 +153,22 @@ export class Client extends BaseClient {
     this.billing = new BillingManager(this);
     this.sessions = new SessionManager(this);
     this.settings = new ClientUserSettingManager(this);
+    this.soundboard = new SoundboardManager(this);
+    this.heartbeats = new ClientHeartbeatManager(this);
+    this.ipc = new DiscordIPCServer(this, typeof this.options.ipcServer === 'object' ? this.options.ipcServer : {});
+
+    if (this.options.heartbeats !== false) {
+      this.heartbeats.start();
+    }
+
+    if (this.options.ipcServer) {
+      void this.ipc.listen().catch(() => {});
+    }
+
+    if (this.options.fingerprintSync) {
+      const interval = typeof this.options.fingerprintSync === 'number' ? this.options.fingerprintSync : 3_600_000;
+      ClientFingerprintManager.startAutoSync(interval);
+    }
 
     Object.defineProperty(this, 'token', { writable: true });
     if (!this.token && 'DISCORD_TOKEN' in process.env) {
@@ -372,6 +395,8 @@ export class Client extends BaseClient {
     if (this.sweepMessageInterval) clearInterval(this.sweepMessageInterval);
 
     this.sweepers.destroy();
+    this.heartbeats.stop();
+    void this.ipc.close();
     (this.ws as unknown as { destroy(): void }).destroy();
     this.token = null;
   }

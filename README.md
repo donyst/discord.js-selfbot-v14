@@ -222,12 +222,12 @@ Detailed guides and references can be found in the [`docs/`](docs/) directory:
 
 This project is made possible thanks to the following authors and contributors:
 
-### 👑 Project Lead & Current Maintainer (2024 - Present)
+### 👑 Project Lead & Current Maintainer (2025 - Present)
 - **[Phạm Minh Đồng (@donyst)](https://github.com/donyst)**
   - Email: [dongdz.user@gmail.com](mailto:dongdz.user@gmail.com)
   - Lead developer, protocol reverse-engineering, Discord Desktop parity sync, TypeScript architecture.
 
-### 💡 Original Selfbot Creator (2022 - 2024)
+### 💡 Original Selfbot Creator (2022 - 2025)
 - **[aiko-chan-ai](https://github.com/aiko-chan-ai)**
   - Original architect of `discord.js-selfbot-v13`.
 
@@ -246,7 +246,7 @@ See the [LICENSE](LICENSE) file for complete terms.
 
 ```
 discord.js-selfbot-v13
-Copyright (C) 2024-2026 Phạm Minh Đồng (donyst) <dongdz.user@gmail.com>
-Copyright (C) 2022-2024 aiko-chan-ai
+Copyright (C) 2025-2026 Phạm Minh Đồng (donyst) <dongdz.user@gmail.com>
+Copyright (C) 2022-2025 aiko-chan-ai
 Copyright (C) 2015-2022 discord.js contributors
 ```

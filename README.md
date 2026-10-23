@@ -36,11 +36,15 @@
 ## 🌟 Key Highlights
 
 - **Desktop Client Parity**: Built with **Discord Desktop 1.0.9265** parity (Chromium 148, Electron 42.11.15, Build `647615`, Native `96160`).
+- **Dynamic Fingerprinting**: Real-time CDN scraper & multi-device profiles (`desktop`, `mobile` with green phone icon, `web`).
+- **Embedded Discord IPC Server**: Built-in Windows Named Pipe (`\\.\pipe\discord-ipc-0`) allowing Spotify, games, and external tools to update Rich Presence automatically without running the official client!
+- **Automatic Game Detection**: Scans running processes on the host machine against 24,800+ registered Discord games and auto-syncs Rich Presence.
+- **Soundboard Controller**: Full soundboard playback and management directly in voice and stage channels.
+- **DAVE Voice v8 Architecture**: Modern Voice Gateway v8 with DAVE MLS End-to-End Encryption and `aead_aes256_gcm_rtpsize` cipher support.
 - **Complete Interactions**: Full support for slash commands (`/`), buttons, select menus, modal popups, and deferred responses.
 - **Modern Architecture**: Full **TypeScript** typing, native **ESM** (`import`) and **CommonJS** (`require`) dual support.
 - **Voice & Video**: Voice channels, screenshare / Go-Live video streaming via WebRTC/Werift RTP.
 - **Advanced Auth**: QR code Remote Auth login, 2FA/TOTP verification handler, and Captcha callback hooks.
-- **Rich Presence**: Custom Status, Activity with Spotify / Samsung Galaxy RPC, and User Application authorization.
 
 ---
 
@@ -162,6 +166,46 @@ client.on('ready', () => {
 
 // Starts remote auth session, prints QR to console, and auto-logs in:
 await client.QRLogin();
+```
+
+### 5. Advanced Reverse-Engineered Desktop Features
+
+Leverage cutting-edge desktop capabilities reverse-engineered directly from official Discord Desktop:
+
+```typescript
+import { Client } from 'discord.js-selfbot-v14';
+
+const client = new Client({
+  // 1. Emulate Mobile device (displays green phone icon in server member lists)
+  platformMode: 'mobile', // 'desktop' | 'mobile' | 'web'
+
+  // 2. Enable embedded Named Pipe IPC server (\\.\pipe\discord-ipc-0)
+  // External apps (Spotify, games, OBS) will automatically update your Rich Presence!
+  ipcServer: true,
+
+  // 3. Keep client fingerprint continuously auto-synced with Discord CDN
+  fingerprintSync: true,
+
+  // 4. Emulate natural user heartbeats
+  heartbeats: true,
+});
+
+client.on('ready', async () => {
+  console.log(`Selfbot ready as ${client.user?.tag}!`);
+
+  // --- Auto Game Detection (24,800+ games) ---
+  // Automatically detects when you start playing games on your PC and updates your activity:
+  client.games.startAutoDetection({
+    intervalMs: 15_000,
+    autoSetActivity: true,
+  });
+
+  // --- Discord Soundboard ---
+  // Play soundboard sounds directly into a voice channel:
+  // await client.soundboard.play('VOICE_CHANNEL_ID', 'SOUND_ID');
+});
+
+client.login(process.env.DISCORD_TOKEN);
 ```
 
 ---
